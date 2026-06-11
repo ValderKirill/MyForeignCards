@@ -12,7 +12,7 @@ namespace MyForeignCards.Utils
         public static async Task GetWord(HttpRequest request, HttpResponse response, List<WordModel> words)
         {
             var id = request.Path.Value?.Split("/")[2];
-            var word = words.FirstOrDefault(word => word.Id == id);
+            var word = words.FirstOrDefault(word => word.Id .ToString() == id);
 
             if (word != null)
             {
@@ -27,9 +27,36 @@ namespace MyForeignCards.Utils
 
         public static async Task AddWord(HttpRequest request, HttpResponse response, List<WordModel> words)
         {
+            var word = request.Query["word"];
+            var translation = request.Query["translation"];
             //https://localhost:7258/add?word=aboba&translation=абоба
-            words.Add(new WordModel(request.Query["word"], request.Query["translation"]));
-            response.Redirect("/");
+            if (!string.IsNullOrWhiteSpace(word) &&
+                !string.IsNullOrWhiteSpace(translation))
+            {
+                words.Add(new WordModel(word, translation));
+                response.Redirect("/");
+            }
+            else
+            {
+                await response.WriteAsync("Не смогли добавить пустое слово!");
+            }
+        }
+
+        public static async Task DeleteWord(HttpRequest request, HttpResponse response, List<WordModel> words)
+        {
+            var wordId = request.Query["id"];
+            var word = words.FirstOrDefault(w => w.Id.ToString() == wordId);
+
+            if (!string.IsNullOrWhiteSpace(wordId) &&
+                word != null)
+            {
+                words.Remove(word);
+                response.Redirect("/");
+            }
+            else
+            {
+                await response.WriteAsync("Не нашли слово с нужным ID!");
+            }
         }
     }
 }

@@ -14,20 +14,24 @@ var app = builder.Build();
 app.Run(async (context) =>
 { 
 	var request = context.Request;
-	var responce = context.Response;
+	var response = context.Response;
     var expressionForGuid = @"^/word/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$";
 
     if (request.Path == "/" && request.Method == "GET")
 	{
-		await DictionaryUtils.GetAllWords(responce, words);
+		await DictionaryUtils.GetAllWords(response, words);
     }
     else if (Regex.IsMatch(request.Path, expressionForGuid))
     {
-        await DictionaryUtils.GetWord(request, responce, words);
+        await DictionaryUtils.GetWord(request, response, words);
     }
     else if (request.Path == "/add")
 	{
-        await DictionaryUtils.AddWord(request, responce, words);
+        await DictionaryUtils.AddWord(request, response, words);
+    }
+    else if (request.Path == "/delete")
+    {
+        await DictionaryUtils.DeleteWord(request, response, words);
     }
 });
 

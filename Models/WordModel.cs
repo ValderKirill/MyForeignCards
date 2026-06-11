@@ -2,14 +2,13 @@
 {
     public class WordModel
     {
-        public string Id { get; set; }
-
+        public Guid Id { get; set; }
         public string Word { get; set; }
         public string Translation { get; set; }
 
         public WordModel(string word, string translation)
         {
-            Id = Guid.NewGuid().ToString();
+            Id = Guid.NewGuid();
             Word = word;
             Translation = translation;
         }
