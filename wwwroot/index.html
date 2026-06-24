@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MyForeignCards</title>
+</head>
+<body>
+    <h2>Dictionary</h2>
+    <div>
+        <select name="action" id="action">
+            <option value="add">Add word</option>
+            <option value="delete">Delete word</option>
+            <option value="Edit word">Edit word</option>
+        </select>
+        <input type="hidden" id="wordId" />
+        <p>
+            Слово:<br />
+            <input id="word" />
+        </p>
+        <p>
+            Перевод:<br />
+            <input id="translation" />
+        </p>
+        <p>
+            <button id="saveBtn">Сохранить</button>
+            <button id="resetBtn">Сбросить</button>
+        </p>
+    </div>
+    <table>
+        <thead><tr><th>Слово</th><th>Перевод</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        //получение всех слов
+        async function getAllWords() {
+            //отправляем запрос, получаем ответ
+            const response = await fetch("/words", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            //если запрос прошел нормально
+            if (response.ok === true) {
+                const words = await response.json();
+                const rows = document.querySelector("tbody");
+                words.forEach(word => rows.append(row(word)));
+            }
+        }
+
+        //получение всех слов
+        async function deleteWord(id) {
+            //отправляем запрос, получаем ответ
+            const response = await fetch(`/delete/${id}`, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            //если запрос прошел нормально
+            if (response.ok === true) {
+                const words = await response.json();
+                const rows = document.querySelector("tbody");
+                words.forEach(word => rows.append(row(word)));
+            }
+        }
+
+        // создание строки для таблицы
+        function row(word) {
+
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", word.id);
+
+            const nameTd = document.createElement("td");
+            nameTd.append(word.word);
+            tr.append(nameTd);
+
+            const ageTd = document.createElement("td");
+            ageTd.append(word.translation);
+            tr.append(ageTd);
+
+            const linksTd = document.createElement("td");
+
+            const editLink = document.createElement("button");
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async () => await getUser(word.id));
+            linksTd.append(editLink);
+
+            const removeLink = document.createElement("button");
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await deleteUser(word.id));
+
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+
+            return tr;
+        }
+
+        getAllWords();
+    </script>
+</body>
+</html>

@@ -55,7 +55,35 @@ namespace MyForeignCards.Utils
             }
             else
             {
+                response.StatusCode = 404;
                 await response.WriteAsync("Не нашли слово с нужным ID!");
+            }
+        }
+
+        public static async Task EditWord(HttpRequest request, HttpResponse response, List<WordModel> words)
+        {
+            var wordId = request.Query["id"];
+            var neededWord = words.FirstOrDefault(w => w.Id.ToString() == wordId);
+
+            if (neededWord == null)
+            {
+                response.StatusCode = 404;
+                await response.WriteAsync("Не нашли изменяемое слово!");
+            }
+
+            var word = request.Query["word"];
+            var translation = request.Query["translation"];
+
+            if (!string.IsNullOrWhiteSpace(word) &&
+                !string.IsNullOrWhiteSpace(translation))
+            {
+                neededWord.Word = word;
+                neededWord.Translation = translation;
+                response.Redirect("/");
+            }
+            else
+            {
+                await response.WriteAsync("Не смогли добавить пустое слово!");
             }
         }
     }
