@@ -7,11 +7,6 @@
 <body>
     <h2>Dictionary</h2>
     <div>
-        <select name="action" id="action">
-            <option value="add">Add word</option>
-            <option value="delete">Delete word</option>
-            <option value="Edit word">Edit word</option>
-        </select>
         <input type="hidden" id="wordId" />
         <p>
             Слово:<br />
@@ -76,7 +71,7 @@
 
         //Добавление слова
         async function addWord(word, translation) {
-            const response = await fetch("api/words", {
+            const response = await fetch("/api/words", {
                 method: "POST",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -97,7 +92,7 @@
 
         //Изменение слова
         async function editWord(wordId, word, translation) {
-            const response = await fetch("api/words", {
+            const response = await fetch("/api/words", {
                 method: "PUT",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -109,6 +104,7 @@
             if (response.ok === true) {
                 const word = await response.json();
                 document.querySelector(`tr[data-rowid='${word.id}']`).replaceWith(row(word));
+                reset();
             }
             else {
                 const error = await response.json();
@@ -123,6 +119,7 @@
                 method: "DELETE",
                 headers: { "Accept": "application/json" }
             });
+
             if (response.ok === true) {
                 document.querySelector(`tr[data-rowid='${id}']`).remove();
             }

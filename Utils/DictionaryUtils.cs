@@ -1,5 +1,4 @@
 ﻿using MyForeignCards.Models;
-using System.Transactions;
 
 namespace MyForeignCards.Utils
 {
@@ -22,16 +21,12 @@ namespace MyForeignCards.Utils
             else
             {
                 response.StatusCode = 404;
-                await response.WriteAsync("Не нашли искомое слово");
+                await response.WriteAsJsonAsync(new { message = "Не нашли искомое слово" });
             }
         }
 
         public static async Task AddWord(HttpRequest request, HttpResponse response, List<WordModel> words)
         {
-            //var word = request.Query["word"];
-            //var translation = request.Query["translation"];
-            //https://localhost:7258/add?word=aboba&translation=абоба
-
             var newWord = await request.ReadFromJsonAsync<WordModel>();
 
             if (newWord is not null &&
@@ -62,7 +57,7 @@ namespace MyForeignCards.Utils
             else
             {
                 response.StatusCode = 404;
-                await response.WriteAsync("Не нашли слово с нужным ID!");
+                await response.WriteAsJsonAsync(new { message = "Не нашли слово с нужным ID!" });
             }
         }
 
@@ -83,13 +78,13 @@ namespace MyForeignCards.Utils
                 else
                 {
                     response.StatusCode = 404;
-                    await response.WriteAsync("Не смогли добавить пустое слово!");
+                    await response.WriteAsJsonAsync(new { message = "Не смогли добавить пустое слово!" });
                 }
             }
             else
             {
                 response.StatusCode = 400;
-                await response.WriteAsync("Пустые входные данные");
+                await response.WriteAsJsonAsync(new { message = "Пустые входные данные" });
             }
         }
     }
