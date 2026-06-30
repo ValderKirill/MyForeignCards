@@ -11,8 +11,8 @@ namespace MyForeignCards.Utils
 
         public static async Task GetWord(HttpRequest request, HttpResponse response, List<WordModel> words)
         {
-            var id = request.Path.Value?.Split("/")[2];
-            var word = words.FirstOrDefault(word => word.Id .ToString() == id);
+            var wordId = request.Path.Value?.Split("/")[3];
+            var word = words.FirstOrDefault(word => word.Id.ToString() == wordId);
 
             if (word != null)
             {
@@ -21,69 +21,70 @@ namespace MyForeignCards.Utils
             else
             {
                 response.StatusCode = 404;
-                await response.WriteAsync("Не нашли искомое слово");
+                await response.WriteAsJsonAsync(new { message = "Не нашли искомое слово" });
             }
         }
 
         public static async Task AddWord(HttpRequest request, HttpResponse response, List<WordModel> words)
         {
-            var word = request.Query["word"];
-            var translation = request.Query["translation"];
-            //https://localhost:7258/add?word=aboba&translation=абоба
-            if (!string.IsNullOrWhiteSpace(word) &&
-                !string.IsNullOrWhiteSpace(translation))
+            var newWord = await request.ReadFromJsonAsync<WordModel>();
+
+            if (newWord is not null &&
+                !string.IsNullOrWhiteSpace(newWord.Word) &&
+                !string.IsNullOrWhiteSpace(newWord.Translation))
             {
-                words.Add(new WordModel(word, translation));
-                response.Redirect("/");
+                words.Add(newWord);
+                await response.WriteAsJsonAsync(newWord);
             }
             else
             {
-                await response.WriteAsync("Не смогли добавить пустое слово!");
+                response.StatusCode = 400;
+                await response.WriteAsJsonAsync(new { message = "Не смогли добавить пустое слово!" });
             }
         }
 
         public static async Task DeleteWord(HttpRequest request, HttpResponse response, List<WordModel> words)
         {
-            var wordId = request.Query["id"];
-            var word = words.FirstOrDefault(w => w.Id.ToString() == wordId);
+            var wordId = request.Path.Value?.Split("/")[3];
+            var word = words.FirstOrDefault(word => word.Id.ToString() == wordId);
 
             if (!string.IsNullOrWhiteSpace(wordId) &&
                 word != null)
             {
                 words.Remove(word);
-                response.Redirect("/");
+                response.StatusCode = 204;
             }
             else
             {
                 response.StatusCode = 404;
-                await response.WriteAsync("Не нашли слово с нужным ID!");
+                await response.WriteAsJsonAsync(new { message = "Не нашли слово с нужным ID!" });
             }
         }
 
         public static async Task EditWord(HttpRequest request, HttpResponse response, List<WordModel> words)
         {
-            var wordId = request.Query["id"];
-            var neededWord = words.FirstOrDefault(w => w.Id.ToString() == wordId);
+            WordModel? reqWord = await request.ReadFromJsonAsync<WordModel>();
 
-            if (neededWord == null)
+            if (reqWord != null)
             {
-                response.StatusCode = 404;
-                await response.WriteAsync("Не нашли изменяемое слово!");
-            }
+                var neededWord = words.FirstOrDefault(word => word.Id == reqWord.Id);
 
-            var word = request.Query["word"];
-            var translation = request.Query["translation"];
-
-            if (!string.IsNullOrWhiteSpace(word) &&
-                !string.IsNullOrWhiteSpace(translation))
-            {
-                neededWord.Word = word;
-                neededWord.Translation = translation;
-                response.Redirect("/");
+                if (neededWord != null)
+                {
+                    neededWord.Word = reqWord.Word;
+                    neededWord.Translation = reqWord.Translation;
+                    await response.WriteAsJsonAsync(neededWord);
+                }
+                else
+                {
+                    response.StatusCode = 404;
+                    await response.WriteAsJsonAsync(new { message = "Не смогли добавить пустое слово!" });
+                }
             }
             else
             {
-                await response.WriteAsync("Не смогли добавить пустое слово!");
+                response.StatusCode = 400;
+                await response.WriteAsJsonAsync(new { message = "Пустые входные данные" });
             }
         }
     }
