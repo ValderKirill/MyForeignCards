@@ -91,12 +91,11 @@
         }
 
         //Изменение слова
-        async function editWord(wordId, word, translation) {
-            const response = await fetch("/api/words", {
+        async function editWord(id, word, translation) {
+            const response = await fetch(`/api/words/${id}`, {
                 method: "PUT",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    id: wordId,
                     word: word,
                     translation: translation
                 })
@@ -122,6 +121,9 @@
 
             if (response.ok === true) {
                 document.querySelector(`tr[data-rowid='${id}']`).remove();
+                if (document.getElementById("wordId").value === id) {
+                    reset();
+                }
             }
             else {
                 const error = await response.json();

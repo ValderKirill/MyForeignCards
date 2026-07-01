@@ -58,24 +58,22 @@ namespace MyForeignCards.Utils
             }
         }
 
-        public static async Task EditWord(HttpRequest request, HttpResponse response, List<WordModel> words)
+        public static async Task EditWord(Guid id, WordModel word, HttpResponse response, List<WordModel> words)
         {
-            WordModel? reqWord = await request.ReadFromJsonAsync<WordModel>();
-
-            if (reqWord != null)
+            if (word != null)
             {
-                var neededWord = words.FirstOrDefault(word => word.Id == reqWord.Id);
+                var neededWord = words.FirstOrDefault(word => word.Id == id);
 
                 if (neededWord != null)
                 {
-                    neededWord.Word = reqWord.Word;
-                    neededWord.Translation = reqWord.Translation;
+                    neededWord.Word = word.Word;
+                    neededWord.Translation = word.Translation;
                     await response.WriteAsJsonAsync(neededWord);
                 }
                 else
                 {
                     response.StatusCode = 404;
-                    await response.WriteAsJsonAsync(new { message = "Не смогли добавить пустое слово!" });
+                    await response.WriteAsJsonAsync(new { message = "Не найдено слово с указанным id" });
                 }
             }
             else

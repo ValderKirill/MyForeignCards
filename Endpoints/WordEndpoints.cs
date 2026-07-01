@@ -12,7 +12,7 @@ namespace MyForeignCards.Endpoints
                 await DictionaryUtils.GetAllWords(response, words);
             });
 
-            app.MapGet("/api/words/{id}", async (Guid id, HttpResponse response) =>
+            app.MapGet("/api/words/{id:guid}", async (Guid id, HttpResponse response) =>
             {
                 await DictionaryUtils.GetWord(id, response, words);
             });
@@ -22,14 +22,14 @@ namespace MyForeignCards.Endpoints
                 await DictionaryUtils.AddWord(request, response, words);
             });
 
-            app.MapDelete("/api/words/{id}", async (Guid id, HttpResponse response) =>
+            app.MapDelete("/api/words/{id:guid}", async (Guid id, HttpResponse response) =>
             {
                 await DictionaryUtils.DeleteWord(id, response, words);
             });
 
-            app.MapPut("/api/words", async (HttpResponse response, HttpRequest request) =>
+            app.MapPut("/api/words/{id:guid}", async (Guid id, WordModel word, HttpResponse response) =>
             {
-                await DictionaryUtils.EditWord(request, response, words);
+                await DictionaryUtils.EditWord(id, word, response, words);
             });
         }
     }
