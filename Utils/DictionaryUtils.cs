@@ -9,10 +9,9 @@ namespace MyForeignCards.Utils
             await response.WriteAsJsonAsync(words);
         }
 
-        public static async Task GetWord(HttpRequest request, HttpResponse response, List<WordModel> words)
+        public static async Task GetWord(Guid id, HttpResponse response, List<WordModel> words)
         {
-            var wordId = request.Path.Value?.Split("/")[3];
-            var word = words.FirstOrDefault(word => word.Id.ToString() == wordId);
+            var word = words.FirstOrDefault(word => word.Id == id);
 
             if (word != null)
             {
@@ -43,13 +42,11 @@ namespace MyForeignCards.Utils
             }
         }
 
-        public static async Task DeleteWord(HttpRequest request, HttpResponse response, List<WordModel> words)
+        public static async Task DeleteWord(Guid id, HttpResponse response, List<WordModel> words)
         {
-            var wordId = request.Path.Value?.Split("/")[3];
-            var word = words.FirstOrDefault(word => word.Id.ToString() == wordId);
+            var word = words.FirstOrDefault(word => word.Id == id);
 
-            if (!string.IsNullOrWhiteSpace(wordId) &&
-                word != null)
+            if (word != null)
             {
                 words.Remove(word);
                 response.StatusCode = 204;
