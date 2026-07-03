@@ -58,11 +58,11 @@ namespace MyForeignCards.Endpoints
                 }
             });
 
-            app.MapPut("/api/words/{id:guid}", async (WordModel word, HttpResponse response, WordService wordService) =>
+            app.MapPut("/api/words/{id:guid}", async (Guid id, WordModel word, HttpResponse response, WordService wordService) =>
             {
                 if (word != null)
                 {
-                    var result = wordService.ChangeWord(word);
+                    var result = wordService.ChangeWord(id, word);
 
                     if (result)
                     {

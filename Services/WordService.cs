@@ -27,12 +27,20 @@ namespace MyForeignCards.Services
 
         public bool DeleteWordById(Guid id)
         {
-            return _words.Remove(_words.First(word => word.Id == id));
+            var word = _words.First(word => word.Id == id);
+            if (word != null)
+            {
+                return _words.Remove(word);
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        public bool ChangeWord(WordModel newWord)
+        public bool ChangeWord(Guid id, WordModel newWord)
         {
-            var word = _words.FirstOrDefault(word => word.Id == newWord.Id);
+            var word = _words.FirstOrDefault(word => word.Id == id);
 
             if (word != null) 
             {
