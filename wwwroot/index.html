@@ -121,6 +121,7 @@
 
             if (response.ok === true) {
                 document.querySelector(`tr[data-rowid='${id}']`).remove();
+
                 if (document.getElementById("wordId").value === id) {
                     reset();
                 }
