@@ -1,4 +1,7 @@
 ﻿using MyForeignCards.Models;
+using System.Reflection.Metadata;
+using System.Transactions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MyForeignCards.Services
 {
@@ -10,6 +13,38 @@ namespace MyForeignCards.Services
             new WordModel("Apple", "Яблоко")
         };
 
-        public List<WordModel> GetWords => _words;
+        public IReadOnlyCollection<WordModel> GetWords => _words.ToList();
+
+        public void AddWord(WordModel newWord)
+        {
+            _words.Add(newWord);
+        }
+
+        public WordModel? GetWordById(Guid id)
+        {
+            return _words.FirstOrDefault(word => word.Id == id);
+        }
+
+        public bool DeleteWordById(Guid id)
+        {
+            return _words.Remove(_words.First(word => word.Id == id));
+        }
+
+        public bool ChangeWord(WordModel newWord)
+        {
+            var word = _words.FirstOrDefault(word => word.Id == newWord.Id);
+
+            if (word != null) 
+            {
+                word.Word = newWord.Word;
+                word.Translation = newWord.Translation;
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

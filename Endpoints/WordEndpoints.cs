@@ -14,7 +14,7 @@ namespace MyForeignCards.Endpoints
 
             app.MapGet("/api/words/{id:guid}", async (Guid id, HttpResponse response, WordService wordService) =>
             {
-                var word = wordService.GetWords.FirstOrDefault(word => word.Id == id);
+                var word = wordService.GetWordById(id);
 
                 if (word != null)
                 {
@@ -27,15 +27,13 @@ namespace MyForeignCards.Endpoints
                 }
             });
 
-            app.MapPost("/api/words", async (HttpResponse response, HttpRequest request, WordService wordService) =>
+            app.MapPost("/api/words", async (HttpResponse response, WordModel newWord, WordService wordService) =>
             {
-                var newWord = await request.ReadFromJsonAsync<WordModel>();
-
                 if (newWord is not null &&
                     !string.IsNullOrWhiteSpace(newWord.Word) &&
                     !string.IsNullOrWhiteSpace(newWord.Translation))
                 {
-                    wordService.GetWords.Add(newWord);
+                    wordService.AddWord(newWord);
                     await response.WriteAsJsonAsync(newWord);
                 }
                 else
@@ -47,11 +45,10 @@ namespace MyForeignCards.Endpoints
 
             app.MapDelete("/api/words/{id:guid}", async (Guid id, HttpResponse response, WordService wordService) =>
             {
-                var word = wordService.GetWords.FirstOrDefault(word => word.Id == id);
+                var result = wordService.DeleteWordById(id);
 
-                if (word != null)
+                if (result)
                 {
-                    wordService.GetWords.Remove(word);
                     response.StatusCode = 204;
                 }
                 else
@@ -61,17 +58,15 @@ namespace MyForeignCards.Endpoints
                 }
             });
 
-            app.MapPut("/api/words/{id:guid}", async (Guid id, WordModel word, HttpResponse response, WordService wordService) =>
+            app.MapPut("/api/words/{id:guid}", async (WordModel word, HttpResponse response, WordService wordService) =>
             {
                 if (word != null)
                 {
-                    var neededWord = wordService.GetWords.FirstOrDefault(word => word.Id == id);
+                    var result = wordService.ChangeWord(word);
 
-                    if (neededWord != null)
+                    if (result)
                     {
-                        neededWord.Word = word.Word;
-                        neededWord.Translation = word.Translation;
-                        await response.WriteAsJsonAsync(neededWord);
+                        await response.WriteAsJsonAsync(word);
                     }
                     else
                     {

@@ -1,5 +1,4 @@
 using MyForeignCards.Endpoints;
-using MyForeignCards.Models;
 using MyForeignCards.Services;
 
 var builder = WebApplication.CreateBuilder(args);
