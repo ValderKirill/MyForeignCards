@@ -1,7 +1,4 @@
 ﻿using MyForeignCards.Models;
-using System.Reflection.Metadata;
-using System.Transactions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MyForeignCards.Services
 {
@@ -12,17 +9,33 @@ namespace MyForeignCards.Services
             new WordModel("Test", "Тест"),
             new WordModel("Apple", "Яблоко")
         };
+        private readonly ILogger<WordService> _logger;
 
-        public IReadOnlyCollection<WordModel> GetWords => _words.ToList();
+        public WordService(ILogger<WordService> logger)
+        {
+            _logger = logger;
+        }
+
+        public IReadOnlyCollection<WordModel> Words => _words.ToList();
 
         public void AddWord(WordModel newWord)
         {
             _words.Add(newWord);
+            _logger.LogInformation("Word {WordId} added. Text: {Word}",
+                newWord.Id,
+                newWord.Word);
         }
 
         public WordModel? GetWordById(Guid id)
         {
-            return _words.FirstOrDefault(word => word.Id == id);
+            var result = _words.FirstOrDefault(word => word.Id == id);
+
+            if (result == null) 
+            {
+                _logger.LogWarning("Get word {WordId} failed: word was not found", id);
+            }
+
+            return result;
         }
 
         public bool DeleteWordById(Guid id)
@@ -30,10 +43,18 @@ namespace MyForeignCards.Services
             var word = _words.First(word => word.Id == id);
             if (word != null)
             {
-                return _words.Remove(word);
+                var result = _words.Remove(word);
+
+                _logger.LogInformation("Word {WordId} deleted. Text: {Word}",
+                    word.Id,
+                    word.Word);
+
+                return result;
             }
             else
             {
+                _logger.LogWarning("Word {WordId} delete failed: word was not found", id);
+
                 return false;
             }
         }
@@ -42,15 +63,21 @@ namespace MyForeignCards.Services
         {
             var word = _words.FirstOrDefault(word => word.Id == id);
 
-            if (word != null) 
+            if (word != null)
             {
                 word.Word = newWord.Word;
                 word.Translation = newWord.Translation;
+
+                _logger.LogInformation("Word {WordId} changed. Text {Word}",
+                    word.Id,
+                    word.Word);
 
                 return true;
             }
             else
             {
+                _logger.LogWarning("Word {wordId} change failed: word was not found", id);
+
                 return false;
             }
         }
