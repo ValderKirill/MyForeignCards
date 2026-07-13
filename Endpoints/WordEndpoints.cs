@@ -9,7 +9,7 @@ namespace MyForeignCards.Endpoints
         {
             app.MapGet("/api/words", async (HttpResponse response, WordService wordService) =>
             {
-                await response.WriteAsJsonAsync(wordService.Words);
+                await response.WriteAsJsonAsync(wordService.Words());
             });
 
             app.MapGet("/api/words/{id:guid}", async (Guid id, HttpResponse response, WordService wordService) =>

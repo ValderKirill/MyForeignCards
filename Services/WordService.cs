@@ -16,12 +16,19 @@ namespace MyForeignCards.Services
             _logger = logger;
         }
 
-        public IReadOnlyCollection<WordModel> Words => _words.ToList();
+        public IReadOnlyCollection<WordModel> Words()
+        {
+            return _words.ToList();
+        } 
 
         public void AddWord(WordModel newWord)
         {
             _words.Add(newWord);
-            _logger.LogInformation("Word {WordId} added. Text: {Word}",
+
+            _logger.LogInformation("Word {WordId} added",
+                newWord.Id);
+
+            _logger.LogDebug("Word {WordId} added. Text {Word}",
                 newWord.Id,
                 newWord.Word);
         }
@@ -32,7 +39,7 @@ namespace MyForeignCards.Services
 
             if (result == null) 
             {
-                _logger.LogWarning("Get word {WordId} failed: word was not found", id);
+                _logger.LogDebug("Get word {WordId} failed: word was not found", id);
             }
 
             return result;
@@ -40,12 +47,15 @@ namespace MyForeignCards.Services
 
         public bool DeleteWordById(Guid id)
         {
-            var word = _words.First(word => word.Id == id);
+            var word = _words.FirstOrDefault(word => word.Id == id);
             if (word != null)
             {
                 var result = _words.Remove(word);
 
-                _logger.LogInformation("Word {WordId} deleted. Text: {Word}",
+                _logger.LogInformation("Word {WordId} deleted",
+                    word.Id);
+
+                _logger.LogDebug("Word {WordId} deleted. Text {Word}",
                     word.Id,
                     word.Word);
 
@@ -68,7 +78,10 @@ namespace MyForeignCards.Services
                 word.Word = newWord.Word;
                 word.Translation = newWord.Translation;
 
-                _logger.LogInformation("Word {WordId} changed. Text {Word}",
+                _logger.LogInformation("Word {WordId} updated",
+                    word.Id);
+
+                _logger.LogDebug("Word {WordId} updeted. Text {Word}",
                     word.Id,
                     word.Word);
 
@@ -76,7 +89,7 @@ namespace MyForeignCards.Services
             }
             else
             {
-                _logger.LogWarning("Word {wordId} change failed: word was not found", id);
+                _logger.LogWarning("Word {WordId} update failed: word was not found", id);
 
                 return false;
             }
