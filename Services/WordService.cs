@@ -28,7 +28,7 @@ namespace MyForeignCards.Services
             _logger.LogInformation("Word {WordId} added",
                 newWord.Id);
 
-            _logger.LogDebug("Word {WordId} added. Text {Word}",
+            _logger.LogDebug("Word {WordId} added. Text: {Word}",
                 newWord.Id,
                 newWord.Word);
         }
@@ -55,7 +55,7 @@ namespace MyForeignCards.Services
                 _logger.LogInformation("Word {WordId} deleted",
                     word.Id);
 
-                _logger.LogDebug("Word {WordId} deleted. Text {Word}",
+                _logger.LogDebug("Word {WordId} deleted. Text: {Word}",
                     word.Id,
                     word.Word);
 
@@ -81,7 +81,7 @@ namespace MyForeignCards.Services
                 _logger.LogInformation("Word {WordId} updated",
                     word.Id);
 
-                _logger.LogDebug("Word {WordId} updeted. Text {Word}",
+                _logger.LogDebug("Word {WordId} updated. Text: {Word}",
                     word.Id,
                     word.Word);
 
