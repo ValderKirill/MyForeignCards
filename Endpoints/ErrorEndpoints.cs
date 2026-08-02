@@ -1,4 +1,6 @@
-﻿namespace MyForeignCards.Endpoints
+﻿using Microsoft.AspNetCore.Diagnostics;
+
+namespace MyForeignCards.Endpoints
 {
     public static class ErrorEndpoints
     {
@@ -7,7 +9,7 @@
             app.Map("/error", (HttpContext context, ILogger<Program> logger) =>
             {
                 var exceptionFeature = context.Features
-                    .Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+                    .Get<IExceptionHandlerFeature>();
 
                 if (exceptionFeature?.Error is not null)
                 {
