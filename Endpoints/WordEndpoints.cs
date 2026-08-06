@@ -9,7 +9,7 @@ namespace MyForeignCards.Endpoints
         {
             app.MapGet("/api/words", async (HttpResponse response, WordService wordService) =>
             {
-                await response.WriteAsJsonAsync(wordService.Words());
+                return Results.Json(wordService.Words());
             });
 
             app.MapGet("/api/words/{id:guid}", async (Guid id, HttpResponse response, WordService wordService) =>
@@ -18,12 +18,11 @@ namespace MyForeignCards.Endpoints
 
                 if (word != null)
                 {
-                    await response.WriteAsJsonAsync(word);
+                    return Results.Json(word);
                 }
                 else
                 {
-                    response.StatusCode = 404;
-                    await response.WriteAsJsonAsync(new { message = "Не нашли искомое слово" });
+                    return Results.NotFound("Не нашли искомое слово");
                 }
             });
 
@@ -34,12 +33,11 @@ namespace MyForeignCards.Endpoints
                     !string.IsNullOrWhiteSpace(newWord.Translation))
                 {
                     wordService.AddWord(newWord);
-                    await response.WriteAsJsonAsync(newWord);
+                    return Results.Json(newWord, statusCode: 200);
                 }
                 else
                 {
-                    response.StatusCode = 400;
-                    await response.WriteAsJsonAsync(new { message = "Не смогли добавить пустое слово!" });
+                    return Results.BadRequest("Не смогли добавить пустое слово!");
                 }
             });
 
@@ -49,12 +47,11 @@ namespace MyForeignCards.Endpoints
 
                 if (result)
                 {
-                    response.StatusCode = 204;
+                    return Results.NoContent();
                 }
                 else
                 {
-                    response.StatusCode = 404;
-                    await response.WriteAsJsonAsync(new { message = "Не нашли слово с нужным ID!" });
+                    return Results.NotFound("Не нашли слово с нужным ID!");
                 }
             });
 
@@ -66,18 +63,16 @@ namespace MyForeignCards.Endpoints
 
                     if (result)
                     {
-                        await response.WriteAsJsonAsync(word);
+                        return Results.Json(word, statusCode: 200);
                     }
                     else
                     {
-                        response.StatusCode = 404;
-                        await response.WriteAsJsonAsync(new { message = "Не найдено слово с указанным id" });
+                        return Results.NotFound("Не найдено слово с указанным id");
                     }
                 }
                 else
                 {
-                    response.StatusCode = 400;
-                    await response.WriteAsJsonAsync(new { message = "Пустые входные данные" });
+                    return Results.BadRequest("Пустые входные данные");
                 }
             });
         }
