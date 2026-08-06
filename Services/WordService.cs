@@ -16,7 +16,7 @@ namespace MyForeignCards.Services
             _logger = logger;
         }
 
-        public IReadOnlyCollection<WordModel> Words()
+        public IReadOnlyCollection<WordModel> GetAllWords()
         {
             return _words.ToList();
         } 

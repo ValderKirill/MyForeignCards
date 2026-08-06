@@ -9,14 +9,14 @@ namespace MyForeignCards.Endpoints
         {
             app.MapGet("/api/words", (WordService wordService) =>
             {
-                return Results.Ok(wordService.Words());
+                return Results.Ok(wordService.GetAllWords());
             });
 
             app.MapGet("/api/words/{id:guid}", (Guid id, WordService wordService) =>
             {
                 var word = wordService.GetWordById(id);
 
-                if (word == null)
+                if (word is null)
                 {
                     return Results.NotFound(new
                     {
@@ -60,7 +60,7 @@ namespace MyForeignCards.Endpoints
 
             app.MapPut("/api/words/{id:guid}", (Guid id, WordModel word, WordService wordService) =>
             {
-                if (word == null)
+                if (word is null)
                 {
                     return Results.BadRequest(new
                     {
@@ -71,17 +71,15 @@ namespace MyForeignCards.Endpoints
 
                 var result = wordService.ChangeWord(id, word);
 
-                if (result)
-                {
-                    return Results.Ok(word);
-                }
-                else
+                if (!result)
                 {
                     return Results.NotFound(new
                     {
                         message = "Не найдено слово с указанным id"
                     });
                 }
+
+                return Results.Ok(word);
             });
         }
     }
