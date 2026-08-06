@@ -7,78 +7,79 @@ namespace MyForeignCards.Endpoints
     {
         public static void MapWordEndpoints(this WebApplication app)
         {
-            app.MapGet("/api/words", async (HttpResponse response, WordService wordService) =>
+            app.MapGet("/api/words", (WordService wordService) =>
             {
-                await response.WriteAsJsonAsync(wordService.Words());
+                return Results.Ok(wordService.GetAllWords());
             });
 
-            app.MapGet("/api/words/{id:guid}", async (Guid id, HttpResponse response, WordService wordService) =>
+            app.MapGet("/api/words/{id:guid}", (Guid id, WordService wordService) =>
             {
                 var word = wordService.GetWordById(id);
 
-                if (word != null)
+                if (word is null)
                 {
-                    await response.WriteAsJsonAsync(word);
+                    return Results.NotFound(new
+                    {
+                        message = "Не нашли искомое слово"
+                    });
                 }
-                else
-                {
-                    response.StatusCode = 404;
-                    await response.WriteAsJsonAsync(new { message = "Не нашли искомое слово" });
-                }
+
+                return Results.Ok(word);
             });
 
-            app.MapPost("/api/words", async (HttpResponse response, WordModel newWord, WordService wordService) =>
+            app.MapPost("/api/words", (WordModel newWord, WordService wordService) =>
             {
-                if (newWord is not null &&
-                    !string.IsNullOrWhiteSpace(newWord.Word) &&
-                    !string.IsNullOrWhiteSpace(newWord.Translation))
+                if (newWord is null ||
+                    string.IsNullOrWhiteSpace(newWord.Word) ||
+                    string.IsNullOrWhiteSpace(newWord.Translation))
                 {
-                    wordService.AddWord(newWord);
-                    await response.WriteAsJsonAsync(newWord);
+                    return Results.BadRequest(new
+                    {
+                        message = "Не смогли добавить пустое слово!"
+                    });
                 }
-                else
-                {
-                    response.StatusCode = 400;
-                    await response.WriteAsJsonAsync(new { message = "Не смогли добавить пустое слово!" });
-                }
+
+                wordService.AddWord(newWord);
+                return Results.Created($"/api/words/{newWord.Id}", newWord);
             });
 
-            app.MapDelete("/api/words/{id:guid}", async (Guid id, HttpResponse response, WordService wordService) =>
+            app.MapDelete("/api/words/{id:guid}", (Guid id, WordService wordService) =>
             {
                 var result = wordService.DeleteWordById(id);
 
-                if (result)
+                if (!result)
                 {
-                    response.StatusCode = 204;
+                    return Results.NotFound(new
+                    {
+                        message = "Не нашли слово с нужным ID!"
+                    });
                 }
-                else
-                {
-                    response.StatusCode = 404;
-                    await response.WriteAsJsonAsync(new { message = "Не нашли слово с нужным ID!" });
-                }
+
+                return Results.NoContent();
             });
 
-            app.MapPut("/api/words/{id:guid}", async (Guid id, WordModel word, HttpResponse response, WordService wordService) =>
+            app.MapPut("/api/words/{id:guid}", (Guid id, WordModel word, WordService wordService) =>
             {
-                if (word != null)
+                if (word is null)
                 {
-                    var result = wordService.ChangeWord(id, word);
+                    return Results.BadRequest(new
+                    {
+                        message = "Пустые входные данные"
+                    });
+                    
+                }
 
-                    if (result)
-                    {
-                        await response.WriteAsJsonAsync(word);
-                    }
-                    else
-                    {
-                        response.StatusCode = 404;
-                        await response.WriteAsJsonAsync(new { message = "Не найдено слово с указанным id" });
-                    }
-                }
-                else
+                var result = wordService.ChangeWord(id, word);
+
+                if (!result)
                 {
-                    response.StatusCode = 400;
-                    await response.WriteAsJsonAsync(new { message = "Пустые входные данные" });
+                    return Results.NotFound(new
+                    {
+                        message = "Не найдено слово с указанным id"
+                    });
                 }
+
+                return Results.Ok(word);
             });
         }
     }
