@@ -1,45 +1,46 @@
-﻿using MyForeignCards.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using MyForeignCards.Data;
+using MyForeignCards.Entities;
 
 namespace MyForeignCards.Services
 {
     public class WordService
     {
-        private readonly List<WordModel> _words = new List<WordModel>()
-        {
-            new WordModel("Test", "Тест"),
-            new WordModel("Apple", "Яблоко")
-        };
         private readonly ILogger<WordService> _logger;
+        private readonly ApplicationContext _context;
 
-        public WordService(ILogger<WordService> logger)
+        public WordService(ILogger<WordService> logger, ApplicationContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
-        public IReadOnlyCollection<WordModel> GetAllWords()
+        public Task<List<Word>> GetAllWords()
         {
-            return _words.ToList();
+            return _context.Words.ToListAsync();
         } 
 
-        public void AddWord(WordModel newWord)
+        public async void AddWordAsync(Word newWord)
         {
-            _words.Add(newWord);
+            await _context.AddAsync(newWord);
 
-            _logger.LogInformation("Word {WordId} added",
+            _context.SaveChanges();
+
+            _logger.LogInformation("Text {WordId} added",
                 newWord.Id);
 
-            _logger.LogDebug("Word {WordId} added. Text: {Word}",
+            _logger.LogDebug("Text {TextId} added. Text: {Text}",
                 newWord.Id,
-                newWord.Word);
+                newWord.Text);
         }
 
-        public WordModel? GetWordById(Guid id)
+        public async Task<Word?> GetWordByIdAsync(Guid id)
         {
-            var result = _words.FirstOrDefault(word => word.Id == id);
+            var result = await _context.Words.FirstOrDefaultAsync(word => word.Id == id);
 
             if (result == null) 
             {
-                _logger.LogDebug("Get word {WordId} failed: word was not found", id);
+                _logger.LogDebug("Get text {TextId} failed: text was not found", id);
             }
 
             return result;
@@ -47,49 +48,53 @@ namespace MyForeignCards.Services
 
         public bool DeleteWordById(Guid id)
         {
-            var word = _words.FirstOrDefault(word => word.Id == id);
+            var word = _context.Words.FirstOrDefaultAsync(word => word.Id == id).Result;
             if (word != null)
             {
-                var result = _words.Remove(word);
+                var result = _context.Words.Remove(word);
 
-                _logger.LogInformation("Word {WordId} deleted",
+                _context.SaveChanges();
+
+                _logger.LogInformation("Text {TextId} deleted",
                     word.Id);
 
-                _logger.LogDebug("Word {WordId} deleted. Text: {Word}",
+                _logger.LogDebug("Text {TextId} deleted. Text: {Text}",
                     word.Id,
-                    word.Word);
-
-                return result;
-            }
-            else
-            {
-                _logger.LogWarning("Word {WordId} delete failed: word was not found", id);
-
-                return false;
-            }
-        }
-
-        public bool ChangeWord(Guid id, WordModel newWord)
-        {
-            var word = _words.FirstOrDefault(word => word.Id == id);
-
-            if (word != null)
-            {
-                word.Word = newWord.Word;
-                word.Translation = newWord.Translation;
-
-                _logger.LogInformation("Word {WordId} updated",
-                    word.Id);
-
-                _logger.LogDebug("Word {WordId} updated. Text: {Word}",
-                    word.Id,
-                    word.Word);
+                    word.Text);
 
                 return true;
             }
             else
             {
-                _logger.LogWarning("Word {WordId} update failed: word was not found", id);
+                _logger.LogWarning("Text {TextId} delete failed: text was not found", id);
+
+                return false;
+            }
+        }
+
+        public bool ChangeWord(Guid id, Word newWord)
+        {
+            var word = _context.Words.FirstOrDefaultAsync(word => word.Id == id).Result;
+
+            if (word != null)
+            {
+                word.Text = newWord.Text;
+                word.Translation = newWord.Translation;
+
+                _context.SaveChanges();
+
+                _logger.LogInformation("Text {TextId} updated",
+                    word.Id);
+
+                _logger.LogDebug("Text {TextId} updated. Text: {Text}",
+                    word.Id,
+                    word.Text);
+
+                return true;
+            }
+            else
+            {
+                _logger.LogWarning("Text {TextId} update failed: text was not found", id);
 
                 return false;
             }
