@@ -51,9 +51,10 @@ namespace MyForeignCards.Services
         public async Task<bool> DeleteWordByIdAsync(Guid id)
         {
             var word = await _context.Words.FindAsync(id);
+
             if (word != null)
             {
-                var result = _context.Words.Remove(word);
+                _context.Words.Remove(word);
 
                 await _context.SaveChangesAsync();
 
