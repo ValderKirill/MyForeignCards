@@ -10,7 +10,7 @@
         <input type="hidden" id="wordId" />
         <p>
             Слово:<br />
-            <input id="word" />
+            <input id="text" />
         </p>
         <p>
             Перевод:<br />
@@ -30,12 +30,11 @@
     <script>
         //получение всех слов
         async function getAllWords() {
-            //отправляем запрос, получаем ответ
             const response = await fetch("/api/words", {
                 method: "GET",
                 headers: { "Accept": "application/json" }
             });
-            //если запрос прошел нормально
+
             if (response.ok === true) {
                 const words = await response.json();
                 const rows = document.querySelector("tbody");
@@ -49,18 +48,16 @@
 
         //получение слова
         async function getWord(id) {
-            //отправляем запрос, получаем ответ
             const response = await fetch(`/api/words/${id}`, {
                 method: "GET",
                 headers: { "Accept": "application/json" }
             });
 
-            //если запрос прошел нормально
             if (response.ok === true) {
                 const wordModel = await response.json();
 
                 document.getElementById("wordId").value = wordModel.id;
-                document.getElementById("word").value = wordModel.word;
+                document.getElementById("text").value = wordModel.text;
                 document.getElementById("translation").value = wordModel.translation;
             }
             else {
@@ -70,15 +67,16 @@
         }
 
         //Добавление слова
-        async function addWord(word, translation) {
+        async function addWord(text, translation) {
             const response = await fetch("/api/words", {
                 method: "POST",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    word: word,
+                    text: text,
                     translation: translation
                 })
             });
+
             if (response.ok === true) {
                 const word = await response.json();
                 document.querySelector("tbody").append(row(word));
@@ -91,16 +89,16 @@
         }
 
         //Изменение слова
-        async function editWord(id, word, translation) {
+        async function editWord(id, text, translation) {
             const response = await fetch(`/api/words/${id}`, {
                 method: "PUT",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    id: id,
-                    word: word,
+                    text: text,
                     translation: translation
                 })
             })
+
             if (response.ok === true) {
                 const word = await response.json();
                 document.querySelector(`tr[data-rowid='${word.id}']`).replaceWith(row(word));
@@ -114,7 +112,6 @@
 
         //Удаление слова
         async function deleteWord(id) {
-            //отправляем запрос, получаем ответ
             const response = await fetch(`/api/words/${id}`, {
                 method: "DELETE",
                 headers: { "Accept": "application/json" }
@@ -140,7 +137,7 @@
             tr.setAttribute("data-rowid", word.id);
 
             const nameTd = document.createElement("td");
-            nameTd.append(word.word);
+            nameTd.append(word.text);
             tr.append(nameTd);
 
             const ageTd = document.createElement("td");
@@ -166,7 +163,7 @@
 
         function reset() {
             document.getElementById("wordId").value =
-                document.getElementById("word").value =
+                document.getElementById("text").value =
                 document.getElementById("translation").value = "";
         }
 
@@ -175,14 +172,14 @@
         //Отправка формы
         document.getElementById("saveBtn").addEventListener("click", async () => {
             const id = document.getElementById("wordId").value;
-            const word = document.getElementById("word").value;
+            const text = document.getElementById("text").value;
             const translation = document.getElementById("translation").value;
 
             if (id === "") {
-                await addWord(word, translation);
+                await addWord(text, translation);
             }
             else {
-                await editWord(id, word, translation)
+                await editWord(id, text, translation)
             }
         })
 

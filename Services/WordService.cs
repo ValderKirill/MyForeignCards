@@ -1,41 +1,44 @@
-﻿using MyForeignCards.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using MyForeignCards.Data;
+using MyForeignCards.Entities;
 
 namespace MyForeignCards.Services
 {
     public class WordService
     {
-        private readonly List<WordModel> _words = new List<WordModel>()
-        {
-            new WordModel("Test", "Тест"),
-            new WordModel("Apple", "Яблоко")
-        };
         private readonly ILogger<WordService> _logger;
+        private readonly ApplicationContext _context;
 
-        public WordService(ILogger<WordService> logger)
+        public WordService(ILogger<WordService> logger, ApplicationContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
-        public IReadOnlyCollection<WordModel> GetAllWords()
+        public Task<List<Word>> GetAllWordsAsync()
         {
-            return _words.ToList();
+            return _context.Words.ToListAsync();
         } 
 
-        public void AddWord(WordModel newWord)
+        public async Task<Word> AddWordAsync(Word newWord)
         {
-            _words.Add(newWord);
+            var word = _context.Words.Add(newWord);
+
+            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Word {WordId} added",
                 newWord.Id);
 
-            _logger.LogDebug("Word {WordId} added. Text: {Word}",
+            _logger.LogDebug("Word {WordId} added. Word: {Text}",
                 newWord.Id,
-                newWord.Word);
+                newWord.Text);
+
+            return word.Entity;
         }
 
-        public WordModel? GetWordById(Guid id)
+        public async Task<Word?> GetWordByIdAsync(Guid id)
         {
-            var result = _words.FirstOrDefault(word => word.Id == id);
+            var result = await _context.Words.FindAsync(id);
 
             if (result == null) 
             {
@@ -45,21 +48,23 @@ namespace MyForeignCards.Services
             return result;
         }
 
-        public bool DeleteWordById(Guid id)
+        public async Task<bool> DeleteWordByIdAsync(Guid id)
         {
-            var word = _words.FirstOrDefault(word => word.Id == id);
+            var word = await _context.Words.FindAsync(id);
             if (word != null)
             {
-                var result = _words.Remove(word);
+                var result = _context.Words.Remove(word);
+
+                await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Word {WordId} deleted",
                     word.Id);
 
-                _logger.LogDebug("Word {WordId} deleted. Text: {Word}",
+                _logger.LogDebug("Word {WordId} deleted. Word: {Text}",
                     word.Id,
-                    word.Word);
+                    word.Text);
 
-                return result;
+                return true;
             }
             else
             {
@@ -69,21 +74,23 @@ namespace MyForeignCards.Services
             }
         }
 
-        public bool ChangeWord(Guid id, WordModel newWord)
+        public async Task<bool> ChangeWordAsync(Guid id, Word newWord)
         {
-            var word = _words.FirstOrDefault(word => word.Id == id);
+            var word = await _context.Words.FindAsync(id);
 
             if (word != null)
             {
-                word.Word = newWord.Word;
+                word.Text = newWord.Text;
                 word.Translation = newWord.Translation;
+
+                await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Word {WordId} updated",
                     word.Id);
 
-                _logger.LogDebug("Word {WordId} updated. Text: {Word}",
+                _logger.LogDebug("Word {WordId} updated. Word: {Text}",
                     word.Id,
-                    word.Word);
+                    word.Text);
 
                 return true;
             }
