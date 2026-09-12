@@ -1,4 +1,5 @@
-﻿using MyForeignCards.Entities;
+﻿using MyForeignCards.DTOs;
+using MyForeignCards.Entities;
 using MyForeignCards.Services;
 
 namespace MyForeignCards.Endpoints
@@ -9,7 +10,7 @@ namespace MyForeignCards.Endpoints
         {
             app.MapGet("/api/words", async (WordService wordService) =>
             {
-                var words = await wordService.GetAllWords();
+                var words = await wordService.GetAllWordsAsync();
                 return Results.Ok(words);
             });
 
@@ -28,7 +29,7 @@ namespace MyForeignCards.Endpoints
                 return Results.Ok(word);
             });
 
-            app.MapPost("/api/words", (Word newWord, WordService wordService) =>
+            app.MapPost("/api/words", async (Word newWord, WordService wordService) =>
             {
                 if (newWord is null ||
                     string.IsNullOrWhiteSpace(newWord.Text) ||
@@ -40,13 +41,13 @@ namespace MyForeignCards.Endpoints
                     });
                 }
 
-                wordService.AddWordAsync(newWord);
+                await wordService.AddWordAsync(newWord);
                 return Results.Created($"/api/words/{newWord.Id}", newWord);
             });
 
-            app.MapDelete("/api/words/{id:guid}", (Guid id, WordService wordService) =>
+            app.MapDelete("/api/words/{id:guid}", async (Guid id, WordService wordService) =>
             {
-                var result = wordService.DeleteWordById(id);
+                var result = await wordService.DeleteWordByIdAsync(id);
 
                 if (!result)
                 {
@@ -59,9 +60,9 @@ namespace MyForeignCards.Endpoints
                 return Results.NoContent();
             });
 
-            app.MapPut("/api/words/{id:guid}", (Guid id, Word word, WordService wordService) =>
+            app.MapPut("/api/words/{id:guid}", async (Guid id, WordRequest wordReq, WordService wordService) =>
             {
-                if (word is null)
+                if (wordReq is null)
                 {
                     return Results.BadRequest(new
                     {
@@ -69,7 +70,14 @@ namespace MyForeignCards.Endpoints
                     });
                 }
 
-                var result = wordService.ChangeWord(id, word);
+                var word = new Word()
+                {
+                    Id = id,
+                    Text = wordReq.Text,
+                    Translation = wordReq.Translation
+                };
+
+                var result = await wordService.ChangeWordAsync(id, word);
 
                 if (!result)
                 {

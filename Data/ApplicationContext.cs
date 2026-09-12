@@ -6,9 +6,10 @@ namespace MyForeignCards.Data
     public class ApplicationContext : DbContext
     {
         public DbSet<Word> Words => Set<Word>();
+
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
-            Database.EnsureCreated();
+            //Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

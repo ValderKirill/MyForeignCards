@@ -15,50 +15,50 @@ namespace MyForeignCards.Services
             _context = context;
         }
 
-        public Task<List<Word>> GetAllWords()
+        public Task<List<Word>> GetAllWordsAsync()
         {
             return _context.Words.ToListAsync();
         } 
 
-        public async void AddWordAsync(Word newWord)
+        public async Task AddWordAsync(Word newWord)
         {
-            await _context.AddAsync(newWord);
+            var word = _context.Words.Add(newWord);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Text {WordId} added",
+            _logger.LogInformation("Word {WordId} added",
                 newWord.Id);
 
-            _logger.LogDebug("Text {TextId} added. Text: {Text}",
+            _logger.LogDebug("Word {WordId} added. Word: {Text}",
                 newWord.Id,
                 newWord.Text);
         }
 
         public async Task<Word?> GetWordByIdAsync(Guid id)
         {
-            var result = await _context.Words.FirstOrDefaultAsync(word => word.Id == id);
+            var result = await _context.Words.FindAsync(id);
 
             if (result == null) 
             {
-                _logger.LogDebug("Get text {TextId} failed: text was not found", id);
+                _logger.LogDebug("Get word {WordId} failed: word was not found", id);
             }
 
             return result;
         }
 
-        public bool DeleteWordById(Guid id)
+        public async Task<bool> DeleteWordByIdAsync(Guid id)
         {
-            var word = _context.Words.FirstOrDefaultAsync(word => word.Id == id).Result;
+            var word = await _context.Words.FindAsync(id);
             if (word != null)
             {
                 var result = _context.Words.Remove(word);
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Text {TextId} deleted",
+                _logger.LogInformation("Word {WordId} deleted",
                     word.Id);
 
-                _logger.LogDebug("Text {TextId} deleted. Text: {Text}",
+                _logger.LogDebug("Word {WordId} deleted. Word: {Text}",
                     word.Id,
                     word.Text);
 
@@ -66,27 +66,27 @@ namespace MyForeignCards.Services
             }
             else
             {
-                _logger.LogWarning("Text {TextId} delete failed: text was not found", id);
+                _logger.LogWarning("Word {WordId} delete failed: word was not found", id);
 
                 return false;
             }
         }
 
-        public bool ChangeWord(Guid id, Word newWord)
+        public async Task<bool> ChangeWordAsync(Guid id, Word newWord)
         {
-            var word = _context.Words.FirstOrDefaultAsync(word => word.Id == id).Result;
+            var word = await _context.Words.FirstOrDefaultAsync(word => word.Id == id);
 
             if (word != null)
             {
                 word.Text = newWord.Text;
                 word.Translation = newWord.Translation;
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Text {TextId} updated",
+                _logger.LogInformation("Word {WordId} updated",
                     word.Id);
 
-                _logger.LogDebug("Text {TextId} updated. Text: {Text}",
+                _logger.LogDebug("Word {WordId} updated. Word: {Text}",
                     word.Id,
                     word.Text);
 
@@ -94,7 +94,7 @@ namespace MyForeignCards.Services
             }
             else
             {
-                _logger.LogWarning("Text {TextId} update failed: text was not found", id);
+                _logger.LogWarning("Word {WordId} update failed: word was not found", id);
 
                 return false;
             }
