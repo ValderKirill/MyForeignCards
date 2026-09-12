@@ -29,11 +29,11 @@ namespace MyForeignCards.Endpoints
                 return Results.Ok(word);
             });
 
-            app.MapPost("/api/words", async (Word newWord, WordService wordService) =>
+            app.MapPost("/api/words", async (WordRequest wordReq, WordService wordService) =>
             {
-                if (newWord is null ||
-                    string.IsNullOrWhiteSpace(newWord.Text) ||
-                    string.IsNullOrWhiteSpace(newWord.Translation))
+                if (wordReq is null ||
+                    string.IsNullOrWhiteSpace(wordReq.Text) ||
+                    string.IsNullOrWhiteSpace(wordReq.Translation))
                 {
                     return Results.BadRequest(new
                     {
@@ -41,8 +41,14 @@ namespace MyForeignCards.Endpoints
                     });
                 }
 
-                await wordService.AddWordAsync(newWord);
-                return Results.Created($"/api/words/{newWord.Id}", newWord);
+                var word = new Word
+                {
+                    Text = wordReq.Text,
+                    Translation = wordReq.Translation
+                };
+
+                var result = await wordService.AddWordAsync(word);
+                return Results.Created($"/api/words/{result.Id}", result);
             });
 
             app.MapDelete("/api/words/{id:guid}", async (Guid id, WordService wordService) =>
@@ -62,7 +68,9 @@ namespace MyForeignCards.Endpoints
 
             app.MapPut("/api/words/{id:guid}", async (Guid id, WordRequest wordReq, WordService wordService) =>
             {
-                if (wordReq is null)
+                if (wordReq is null ||
+                    string.IsNullOrWhiteSpace(wordReq.Text) ||
+                    string.IsNullOrWhiteSpace(wordReq.Translation))
                 {
                     return Results.BadRequest(new
                     {

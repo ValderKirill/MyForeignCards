@@ -6,7 +6,8 @@ using MyForeignCards.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 var connection = builder.Configuration
-    .GetConnectionString("DefaultConnection");
+    .GetConnectionString("DefaultConnection")
+    ?? throw new Exception("Connection string is not found");
 
 builder.Services.AddDbContext<ApplicationContext>(
     options => options

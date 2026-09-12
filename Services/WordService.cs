@@ -20,7 +20,7 @@ namespace MyForeignCards.Services
             return _context.Words.ToListAsync();
         } 
 
-        public async Task AddWordAsync(Word newWord)
+        public async Task<Word> AddWordAsync(Word newWord)
         {
             var word = _context.Words.Add(newWord);
 
@@ -32,6 +32,8 @@ namespace MyForeignCards.Services
             _logger.LogDebug("Word {WordId} added. Word: {Text}",
                 newWord.Id,
                 newWord.Text);
+
+            return word.Entity;
         }
 
         public async Task<Word?> GetWordByIdAsync(Guid id)
@@ -74,7 +76,7 @@ namespace MyForeignCards.Services
 
         public async Task<bool> ChangeWordAsync(Guid id, Word newWord)
         {
-            var word = await _context.Words.FirstOrDefaultAsync(word => word.Id == id);
+            var word = await _context.Words.FindAsync(id);
 
             if (word != null)
             {
