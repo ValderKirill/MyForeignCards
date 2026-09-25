@@ -29,6 +29,13 @@ namespace MyForeignCards.Endpoints
                 return Results.Ok(word);
             });
 
+            app.MapGet("/api/words/category/{categoryId:guid}", async (Guid categoryId, WordService wordService) =>
+            {
+                var words = await wordService.GetWordsByCategory(categoryId);
+
+                return Results.Ok(words);
+            });
+
             app.MapPost("/api/words", async (WordRequest wordReq, WordService wordService) =>
             {
                 if (wordReq is null ||
@@ -46,6 +53,11 @@ namespace MyForeignCards.Endpoints
                     Text = wordReq.Text,
                     Translation = wordReq.Translation
                 };
+
+                if (wordReq.CategoryId != null)
+                {
+                    word.CategoryId = wordReq.CategoryId;
+                }
 
                 var result = await wordService.AddWordAsync(word);
                 return Results.Created($"/api/words/{result.Id}", result);
@@ -82,7 +94,8 @@ namespace MyForeignCards.Endpoints
                 {
                     Id = id,
                     Text = wordReq.Text,
-                    Translation = wordReq.Translation
+                    Translation = wordReq.Translation,
+                    CategoryId = wordReq.CategoryId
                 };
 
                 var result = await wordService.ChangeWordAsync(id, word);

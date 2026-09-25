@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyForeignCards.Data;
+using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
 
 namespace MyForeignCards.Services
@@ -18,22 +19,43 @@ namespace MyForeignCards.Services
         public Task<List<Word>> GetAllWordsAsync()
         {
             return _context.Words.ToListAsync();
-        } 
+        }
 
-        public async Task<Word> AddWordAsync(Word newWord)
+        public Task<List<Word>> GetWordsByCategory(Guid categoryId)
         {
-            var word = _context.Words.Add(newWord);
+            return _context.Words
+                .Where(word => word.CategoryId == categoryId)
+                .ToListAsync();
+        }
+
+        public async Task<WordResponse> AddWordAsync(Word newWord)
+        {
+            _context.Words.Add(newWord);
 
             await _context.SaveChangesAsync();
+
+            if (newWord.CategoryId != null)
+            {
+                await _context.Entry(newWord).Reference(w => w.Category).LoadAsync();
+            }
 
             _logger.LogInformation("Word {WordId} added",
                 newWord.Id);
 
-            _logger.LogDebug("Word {WordId} added. Word: {Text}",
+            _logger.LogDebug("Word {WordId} added. Word: {Text}, categoryId: {CategoryId}",
                 newWord.Id,
-                newWord.Text);
+                newWord.Text,
+                newWord.Category?.Name ?? "No category");
 
-            return word.Entity;
+            var wordResponce = new WordResponse
+            {
+                Id = newWord.Id,
+                Text = newWord.Text,
+                Translation = newWord.Translation,
+                CategoryId = newWord.CategoryId
+            };
+
+            return wordResponce;
         }
 
         public async Task<Word?> GetWordByIdAsync(Guid id)
@@ -83,15 +105,22 @@ namespace MyForeignCards.Services
             {
                 word.Text = newWord.Text;
                 word.Translation = newWord.Translation;
+                word.CategoryId = newWord.CategoryId;
 
                 await _context.SaveChangesAsync();
+
+                if (newWord.CategoryId != null)
+                {
+                    await _context.Entry(word).Reference(w => w.Category).LoadAsync();
+                }
 
                 _logger.LogInformation("Word {WordId} updated",
                     word.Id);
 
-                _logger.LogDebug("Word {WordId} updated. Word: {Text}",
+                _logger.LogDebug("Word {WordId} updated. Word: {Text}, Category: {Category}",
                     word.Id,
-                    word.Text);
+                    word.Text,
+                    word.Category?.Name ?? "No category");
 
                 return true;
             }

@@ -7,6 +7,18 @@
 <body>
     <h2>Dictionary</h2>
     <div>
+        <p>
+            Добавить категорию:<br />
+            <input id="newCategory" />
+            <button id="addCategoryBtn">Добавить категорию</button>
+        </p>
+        <p>
+            Категория:<br />
+            <select id="category">
+                <option value="">Без категории</option>
+            </select>
+            <button id="deleteCategory">Удалить категорию</button>
+        </p>
         <input type="hidden" id="wordId" />
         <p>
             Слово:<br />
@@ -21,169 +33,19 @@
             <button id="resetBtn">Сбросить</button>
         </p>
     </div>
-    <table>
+    <p>
+        Категория:<br />
+        <select id="tableCategory">
+            <option value="">Без категории</option>
+        </select>
+    </p>
+    <table id="WordsTable">
         <thead><tr><th>Слово</th><th>Перевод</th><th></th></tr></thead>
         <tbody>
         </tbody>
     </table>
 
-    <script>
-        //получение всех слов
-        async function getAllWords() {
-            const response = await fetch("/api/words", {
-                method: "GET",
-                headers: { "Accept": "application/json" }
-            });
-
-            if (response.ok === true) {
-                const words = await response.json();
-                const rows = document.querySelector("tbody");
-                words.forEach(word => rows.append(row(word)));
-            }
-            else {
-                const error = await response.json();
-                console.log(error.message);
-            }
-        }
-
-        //получение слова
-        async function getWord(id) {
-            const response = await fetch(`/api/words/${id}`, {
-                method: "GET",
-                headers: { "Accept": "application/json" }
-            });
-
-            if (response.ok === true) {
-                const wordModel = await response.json();
-
-                document.getElementById("wordId").value = wordModel.id;
-                document.getElementById("text").value = wordModel.text;
-                document.getElementById("translation").value = wordModel.translation;
-            }
-            else {
-                const error = await response.json();
-                console.log(error.message);
-            }
-        }
-
-        //Добавление слова
-        async function addWord(text, translation) {
-            const response = await fetch("/api/words", {
-                method: "POST",
-                headers: { "Accept": "application/json", "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    text: text,
-                    translation: translation
-                })
-            });
-
-            if (response.ok === true) {
-                const word = await response.json();
-                document.querySelector("tbody").append(row(word));
-                reset();
-            }
-            else {
-                const error = await response.json();
-                console.log(error.message);
-            }
-        }
-
-        //Изменение слова
-        async function editWord(id, text, translation) {
-            const response = await fetch(`/api/words/${id}`, {
-                method: "PUT",
-                headers: { "Accept": "application/json", "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    text: text,
-                    translation: translation
-                })
-            })
-
-            if (response.ok === true) {
-                const word = await response.json();
-                document.querySelector(`tr[data-rowid='${word.id}']`).replaceWith(row(word));
-                reset();
-            }
-            else {
-                const error = await response.json();
-                console.log(error.message);
-            }
-        }
-
-        //Удаление слова
-        async function deleteWord(id) {
-            const response = await fetch(`/api/words/${id}`, {
-                method: "DELETE",
-                headers: { "Accept": "application/json" }
-            });
-
-            if (response.ok === true) {
-                document.querySelector(`tr[data-rowid='${id}']`).remove();
-
-                if (document.getElementById("wordId").value === id) {
-                    reset();
-                }
-            }
-            else {
-                const error = await response.json();
-                console.log(error.message);
-            }
-        }
-
-        // создание строки для таблицы
-        function row(word) {
-
-            const tr = document.createElement("tr");
-            tr.setAttribute("data-rowid", word.id);
-
-            const nameTd = document.createElement("td");
-            nameTd.append(word.text);
-            tr.append(nameTd);
-
-            const ageTd = document.createElement("td");
-            ageTd.append(word.translation);
-            tr.append(ageTd);
-
-            const linksTd = document.createElement("td");
-
-            const editLink = document.createElement("button");
-            editLink.append("Изменить");
-            editLink.addEventListener("click", async () => await getWord(word.id));
-            linksTd.append(editLink);
-
-            const removeLink = document.createElement("button");
-            removeLink.append("Удалить");
-            removeLink.addEventListener("click", async () => await deleteWord(word.id));
-
-            linksTd.append(removeLink);
-            tr.appendChild(linksTd);
-
-            return tr;
-        }
-
-        function reset() {
-            document.getElementById("wordId").value =
-                document.getElementById("text").value =
-                document.getElementById("translation").value = "";
-        }
-
-        document.getElementById("resetBtn").addEventListener("click", () => reset());
-
-        //Отправка формы
-        document.getElementById("saveBtn").addEventListener("click", async () => {
-            const id = document.getElementById("wordId").value;
-            const text = document.getElementById("text").value;
-            const translation = document.getElementById("translation").value;
-
-            if (id === "") {
-                await addWord(text, translation);
-            }
-            else {
-                await editWord(id, text, translation)
-            }
-        })
-
-        getAllWords();
-    </script>
+    <script src="/js/words.js"></script>
+    <script src="/js/categories.js"></script>
 </body>
 </html>
