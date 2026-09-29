@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyForeignCards.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyForeignCards.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20260918100520_AddCategory")]
+    partial class AddCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,18 +75,17 @@ namespace MyForeignCards.Migrations
 
             modelBuilder.Entity("MyForeignCards.Entities.Word", b =>
                 {
-                    b.HasOne("MyForeignCards.Entities.Category", "Category")
-                        .WithMany("Words")
+                    b.HasOne("MyForeignCards.Entities.Category", "Categories")
+                        .WithMany("Word")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_words_categories_category_id");
 
-                    b.Navigation("Category");
+                    b.Navigation("Categories");
                 });
 
             modelBuilder.Entity("MyForeignCards.Entities.Category", b =>
                 {
-                    b.Navigation("Words");
+                    b.Navigation("Word");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,13 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connection = builder.Configuration
     .GetConnectionString("DefaultConnection")
-    ?? throw new Exception("Connection string is not found");
+    ?? throw new InvalidOperationException("Connection string is not found");
 
 builder.Services.AddDbContext<ApplicationContext>(
     options => options
         .UseNpgsql(connection)
         .UseSnakeCaseNamingConvention());
 builder.Services.AddScoped<WordService>();
+builder.Services.AddScoped<CategoryService>();
 
 var app = builder.Build();
 
@@ -27,5 +28,6 @@ app.UseStaticFiles();
 
 app.MapErrorEndpoints();
 app.MapWordEndpoints();
+app.MapCategoryEndpoints();
 
 app.Run();
