@@ -1,4 +1,5 @@
-﻿using MyForeignCards.Models;
+﻿using MyForeignCards.DTOs;
+using MyForeignCards.Entities;
 using MyForeignCards.Services;
 
 namespace MyForeignCards.Endpoints
@@ -7,14 +8,15 @@ namespace MyForeignCards.Endpoints
     {
         public static void MapWordEndpoints(this WebApplication app)
         {
-            app.MapGet("/api/words", (WordService wordService) =>
+            app.MapGet("/api/words", async (WordService wordService) =>
             {
-                return Results.Ok(wordService.GetAllWords());
+                var words = await wordService.GetAllWordsAsync();
+                return Results.Ok(words);
             });
 
-            app.MapGet("/api/words/{id:guid}", (Guid id, WordService wordService) =>
+            app.MapGet("/api/words/{id:guid}", async (Guid id, WordService wordService) =>
             {
-                var word = wordService.GetWordById(id);
+                var word = await wordService.GetWordByIdAsync(id);
 
                 if (word is null)
                 {
@@ -27,11 +29,11 @@ namespace MyForeignCards.Endpoints
                 return Results.Ok(word);
             });
 
-            app.MapPost("/api/words", (WordModel newWord, WordService wordService) =>
+            app.MapPost("/api/words", async (WordRequest wordReq, WordService wordService) =>
             {
-                if (newWord is null ||
-                    string.IsNullOrWhiteSpace(newWord.Word) ||
-                    string.IsNullOrWhiteSpace(newWord.Translation))
+                if (wordReq is null ||
+                    string.IsNullOrWhiteSpace(wordReq.Text) ||
+                    string.IsNullOrWhiteSpace(wordReq.Translation))
                 {
                     return Results.BadRequest(new
                     {
@@ -39,13 +41,19 @@ namespace MyForeignCards.Endpoints
                     });
                 }
 
-                wordService.AddWord(newWord);
-                return Results.Created($"/api/words/{newWord.Id}", newWord);
+                var word = new Word
+                {
+                    Text = wordReq.Text,
+                    Translation = wordReq.Translation
+                };
+
+                var result = await wordService.AddWordAsync(word);
+                return Results.Created($"/api/words/{result.Id}", result);
             });
 
-            app.MapDelete("/api/words/{id:guid}", (Guid id, WordService wordService) =>
+            app.MapDelete("/api/words/{id:guid}", async (Guid id, WordService wordService) =>
             {
-                var result = wordService.DeleteWordById(id);
+                var result = await wordService.DeleteWordByIdAsync(id);
 
                 if (!result)
                 {
@@ -58,18 +66,26 @@ namespace MyForeignCards.Endpoints
                 return Results.NoContent();
             });
 
-            app.MapPut("/api/words/{id:guid}", (Guid id, WordModel word, WordService wordService) =>
+            app.MapPut("/api/words/{id:guid}", async (Guid id, WordRequest wordReq, WordService wordService) =>
             {
-                if (word is null)
+                if (wordReq is null ||
+                    string.IsNullOrWhiteSpace(wordReq.Text) ||
+                    string.IsNullOrWhiteSpace(wordReq.Translation))
                 {
                     return Results.BadRequest(new
                     {
                         message = "Пустые входные данные"
                     });
-                    
                 }
 
-                var result = wordService.ChangeWord(id, word);
+                var word = new Word()
+                {
+                    Id = id,
+                    Text = wordReq.Text,
+                    Translation = wordReq.Translation
+                };
+
+                var result = await wordService.ChangeWordAsync(id, word);
 
                 if (!result)
                 {
