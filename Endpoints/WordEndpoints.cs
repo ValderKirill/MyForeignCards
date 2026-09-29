@@ -31,7 +31,7 @@ namespace MyForeignCards.Endpoints
 
             app.MapGet("/api/words/category/{categoryId:guid}", async (Guid categoryId, WordService wordService) =>
             {
-                var words = await wordService.GetWordsByCategory(categoryId);
+                var words = await wordService.GetWordsByCategoryAsync(categoryId);
 
                 return Results.Ok(words);
             });

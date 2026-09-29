@@ -5,6 +5,6 @@
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
 
-        public List<Word> Word { get; set; }
+        public List<Word> Words { get; set; } = [];
     }
 }

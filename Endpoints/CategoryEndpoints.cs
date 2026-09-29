@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Cors.Infrastructure;
-using MyForeignCards.DTOs;
+﻿using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
 using MyForeignCards.Services;
 
@@ -9,7 +8,7 @@ namespace MyForeignCards.Endpoints
     {
         public static void MapCategoryEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/category", async (CategoryRequest categoryReq, CategoryService categoryService) =>
+            app.MapPost("/api/categories", async (CategoryRequest categoryReq, CategoryService categoryService) =>
             {
                 if (categoryReq is null || 
                     string.IsNullOrWhiteSpace(categoryReq.Name))
@@ -35,9 +34,9 @@ namespace MyForeignCards.Endpoints
                 return Results.Ok(categories);
             });
 
-            app.MapDelete("/api/category/{id:guid}", async (Guid id, CategoryService categoryService) =>
+            app.MapDelete("/api/categories/{id:guid}", async (Guid id, CategoryService categoryService) =>
             {
-                var result = await categoryService.DeleteCategoryById(id);
+                var result = await categoryService.DeleteCategoryByIdAsync(id);
 
                 if (!result)
                 {

@@ -16,15 +16,32 @@ namespace MyForeignCards.Services
             _context = context;
         }
 
-        public Task<List<Word>> GetAllWordsAsync()
+        public Task<List<WordResponse>> GetAllWordsAsync()
         {
-            return _context.Words.ToListAsync();
+            return _context.Words
+                .AsNoTracking()
+                .Select(word => new WordResponse
+                {
+                    Id = word.Id,
+                    Text = word.Text,
+                    Translation = word.Translation,
+                    CategoryId = word.CategoryId
+                })
+                .ToListAsync();
         }
 
-        public Task<List<Word>> GetWordsByCategory(Guid categoryId)
+        public Task<List<WordResponse>> GetWordsByCategoryAsync(Guid categoryId)
         {
             return _context.Words
                 .Where(word => word.CategoryId == categoryId)
+                .AsNoTracking()
+                .Select(word => new WordResponse
+                {
+                    Id = word.Id,
+                    Text = word.Text,
+                    Translation = word.Translation,
+                    CategoryId = word.CategoryId
+                })
                 .ToListAsync();
         }
 
@@ -42,12 +59,12 @@ namespace MyForeignCards.Services
             _logger.LogInformation("Word {WordId} added",
                 newWord.Id);
 
-            _logger.LogDebug("Word {WordId} added. Word: {Text}, categoryId: {CategoryId}",
+            _logger.LogDebug("Word {WordId} added. Word: {Text}, category: {CategoryName}",
                 newWord.Id,
                 newWord.Text,
                 newWord.Category?.Name ?? "No category");
 
-            var wordResponce = new WordResponse
+            var wordResponse = new WordResponse
             {
                 Id = newWord.Id,
                 Text = newWord.Text,
@@ -55,19 +72,26 @@ namespace MyForeignCards.Services
                 CategoryId = newWord.CategoryId
             };
 
-            return wordResponce;
+            return wordResponse;
         }
 
-        public async Task<Word?> GetWordByIdAsync(Guid id)
+        public async Task<WordResponse?> GetWordByIdAsync(Guid id)
         {
-            var result = await _context.Words.FindAsync(id);
+            var word = await _context.Words.FindAsync(id);
 
-            if (result == null) 
+            if (word == null) 
             {
                 _logger.LogDebug("Get word {WordId} failed: word was not found", id);
+                return null;
             }
 
-            return result;
+            return new WordResponse
+            {
+                Id = word.Id,
+                Text = word.Text,
+                Translation = word.Translation,
+                CategoryId = word.CategoryId
+            };
         }
 
         public async Task<bool> DeleteWordByIdAsync(Guid id)

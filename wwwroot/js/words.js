@@ -47,6 +47,7 @@ async function getWord(id) {
         document.getElementById("wordId").value = wordModel.id;
         document.getElementById("text").value = wordModel.text;
         document.getElementById("translation").value = wordModel.translation;
+        document.getElementById("category").value = wordModel.categoryId ?? "";
     }
     else {
         const error = await response.json();
@@ -67,8 +68,6 @@ async function addWord(text, translation, categoryId) {
     });
 
     if (response.ok === true) {
-        const word = await response.json();
-        document.querySelector("tbody").append(row(word));
         resetAddForm();
     }
     else {
@@ -90,8 +89,6 @@ async function editWord(id, text, translation, categoryId) {
     })
 
     if (response.ok === true) {
-        const word = await response.json();
-        document.querySelector(`tr[data-rowid='${word.id}']`).replaceWith(row(word));
         resetAddForm();
     }
     else {
@@ -108,11 +105,7 @@ async function deleteWord(id) {
     });
 
     if (response.ok === true) {
-        document.querySelector(`tr[data-rowid='${id}']`).remove();
-
-        if (document.getElementById("wordId").value === id) {
-            resetAddForm();
-        }
+        resetAddForm();
     }
     else {
         const error = await response.json();
@@ -143,7 +136,11 @@ function row(word) {
 
     const removeLink = document.createElement("button");
     removeLink.append("Удалить");
-    removeLink.addEventListener("click", async () => await deleteWord(word.id));
+    removeLink.addEventListener("click", async () => {
+        const tableCategoryId = document.getElementById("tableCategory").value;
+        await deleteWord(word.id);
+        await refreshTable(tableCategoryId);
+    });
 
     linksTd.append(removeLink);
     tr.appendChild(linksTd);
@@ -168,20 +165,17 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     const id = document.getElementById("wordId").value;
     const text = document.getElementById("text").value;
     const translation = document.getElementById("translation").value;
-    const newCategoryValue = document.getElementById("category").value;
-    const newCategoryId = newCategoryValue === "" ? null : newCategoryValue
-
-    const tableCategoryValue = document.getElementById("tableCategory").value;
-    const tableCategoryId = tableCategoryValue === "" ? null : tableCategoryValue
+    const newCategoryId = document.getElementById("category").value || null;
+    const tableCategoryId = document.getElementById("tableCategory").value;
 
     if (id === "") {
-        await addWord(text, translation, newCategoryValue);
-        await refreshTable(tableCategoryId);
+        await addWord(text, translation, newCategoryId);
     }
     else {
-        await editWord(id, text, translation, newCategoryValue);
-        await refreshTable(tableCategoryId);
+        await editWord(id, text, translation, newCategoryId);
     }
+
+    await refreshTable(tableCategoryId);
 })
 
 document.getElementById("tableCategory").addEventListener("change", async () => {

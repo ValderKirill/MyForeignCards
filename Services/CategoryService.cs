@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyForeignCards.Data;
+using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
 
 namespace MyForeignCards.Services
@@ -15,9 +16,9 @@ namespace MyForeignCards.Services
             _context = context;
         }
 
-        public async Task<Category> AddCategoryAsync(Category newCategory)
+        public async Task<CategoryResponse> AddCategoryAsync(Category newCategory)
         {
-            var category = _context.Categories.Add(newCategory);
+            var category = _context.Categories.Add(newCategory).Entity;
 
             await _context.SaveChangesAsync();
 
@@ -28,15 +29,26 @@ namespace MyForeignCards.Services
                 newCategory.Id,
                 newCategory.Name);
 
-            return category.Entity;
+            return new CategoryResponse
+            {
+                Id = category.Id,
+                Name = category.Name
+            };
         }
 
-        public Task<List<Category>> GetAllCategoriesAsync()
+        public Task<List<CategoryResponse>> GetAllCategoriesAsync()
         {
-            return _context.Categories.ToListAsync();
+            return _context.Categories
+                .AsNoTracking()
+                .Select(category => new CategoryResponse
+                {
+                    Id = category.Id,
+                    Name = category.Name
+                })
+                .ToListAsync();
         }
 
-        public async Task<bool> DeleteCategoryById(Guid id)
+        public async Task<bool> DeleteCategoryByIdAsync(Guid id)
         {
             var category = await _context.Categories.FindAsync(id);
 

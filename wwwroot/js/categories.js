@@ -1,6 +1,6 @@
 ﻿//Добавление категории
 async function addCategory(name) {
-    const response = await fetch("/api/category", {
+    const response = await fetch("/api/categories", {
         method: "POST",
         headers: { "Accept": "application/json", "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,7 +47,7 @@ async function getAllCategories() {
 }
 
 async function deleteCategory(id) {
-    const response = await fetch(`/api/category/${id}`, {
+    const response = await fetch(`/api/categories/${id}`, {
         method: "DELETE",
         headers: { "Accept": "application/json" }
     });
@@ -80,6 +80,16 @@ function resetCategory() {
     document.getElementById("category").value = "";
 }
 
+function disableOrEnableDeleteCategoryButton() {
+    const categoryId = document.getElementById("category").value;
+    if (categoryId === "") {
+        document.getElementById("deleteCategory").disabled = true;
+    }
+    else {
+        document.getElementById("deleteCategory").disabled = false;
+    }
+}
+
 document.getElementById("addCategoryBtn").addEventListener("click", async () => {
     const name = document.getElementById("newCategory").value;
     await addCategory(name);
@@ -90,4 +100,9 @@ document.getElementById("deleteCategory").addEventListener("click", async () => 
     await deleteCategory(id);
 })
 
+document.getElementById("category").addEventListener("change", async () => {
+    disableOrEnableDeleteCategoryButton();
+})
+
+disableOrEnableDeleteCategoryButton();
 getAllCategories();

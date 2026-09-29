@@ -9,5 +9,16 @@ namespace MyForeignCards.Data
         public DbSet<Category> Categories => Set<Category>();
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Word>()
+                .HasOne(w => w.Category)
+                .WithMany(c => c.Words)
+                .HasForeignKey(w => w.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
+        }
     }
 }
