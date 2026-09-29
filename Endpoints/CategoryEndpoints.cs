@@ -25,7 +25,7 @@ namespace MyForeignCards.Endpoints
                 };
 
                 var result = await categoryService.AddCategoryAsync(category);
-                return Results.Created($"/api/category/{result.Id}", result);
+                return Results.Created($"/api/categories/{result.Id}", result);
             });
 
             app.MapGet("/api/categories", async (CategoryService categoryService) =>
