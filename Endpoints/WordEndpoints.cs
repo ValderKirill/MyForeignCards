@@ -108,7 +108,13 @@ namespace MyForeignCards.Endpoints
                     });
                 }
 
-                return Results.Ok(word);
+                return Results.Ok(new WordResponse
+                {
+                    Id = word.Id,
+                    Text = word.Text,
+                    Translation = word.Translation,
+                    CategoryId = word.CategoryId
+                });
             });
         }
     }
