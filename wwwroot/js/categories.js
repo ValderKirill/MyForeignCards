@@ -58,6 +58,7 @@ async function deleteCategory(id) {
             option.remove()
         }
         resetCategory();
+        refreshTable("");
     }
     else {
         const error = await response.json();
@@ -78,6 +79,7 @@ function resetAddCategory() {
 
 function resetCategory() {
     document.getElementById("category").value = "";
+    disableOrEnableDeleteCategoryButton();
 }
 
 function disableOrEnableDeleteCategoryButton() {

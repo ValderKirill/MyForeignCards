@@ -105,7 +105,9 @@ async function deleteWord(id) {
     });
 
     if (response.ok === true) {
-        resetAddForm();
+        if (document.getElementById("wordId").value === id) {
+            resetAddForm();
+        }
     }
     else {
         const error = await response.json();
