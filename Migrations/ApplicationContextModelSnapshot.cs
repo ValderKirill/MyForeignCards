@@ -67,6 +67,10 @@ namespace MyForeignCards.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
+                    b.HasIndex("Login")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_login");
+
                     b.ToTable("users", (string)null);
                 });
 

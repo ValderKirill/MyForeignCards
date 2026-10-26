@@ -20,6 +20,10 @@ namespace MyForeignCards.Data
                 .WithMany(c => c.Words)
                 .HasForeignKey(w => w.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(user => user.Login)
+                .IsUnique();
         }
     }
 }

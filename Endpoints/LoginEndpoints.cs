@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
 using MyForeignCards.Services;
@@ -56,7 +55,16 @@ namespace MyForeignCards.Endpoints
                 };
 
                 var result = await service.AddUserAsync(user);
-                return Results.Created($"/api/registration/{result.Id}", result);
+
+                if(result is null)
+                {
+                    return Results.BadRequest(new
+                    {
+                        message = "Пользователь с таким именем уже существует"
+                    });
+                }
+
+                return Results.Created((string?)null, result);
             });
 
             app.MapPost("/logout", async (HttpContext context) =>

@@ -28,7 +28,7 @@ async function registration(login, password) {
     });
 
     if (response.ok === true) {
-        entry(login, password);
+        await entry(login, password);
         sessionStorage.setItem("username", login);
         window.location.href = "/index.html";
     }
@@ -44,6 +44,7 @@ async function logout() {
 
     if (response.ok === true) {
         window.location.href = "login.html";
+        sessionStorage.removeItem("username");
     }
     else {
         console.log("Status: ", response.status);
@@ -66,14 +67,14 @@ if (loginBtn) {
         const login = document.getElementById("login").value;
         const password = document.getElementById("password").value;
 
-        entry(login, password);
+        await entry(login, password);
     });
 
     document.getElementById("regBtn").addEventListener("click", async e => {
         const login = document.getElementById("login").value;
         const password = document.getElementById("password").value;
 
-        registration(login, password);
+        await registration(login, password);
     });
 }
 
@@ -81,7 +82,7 @@ const logoutBtn = document.getElementById("logOutBtn");
 
 if (logoutBtn) {
     logoutBtn.addEventListener("click", async e => {
-        logout();
+        await logout();
     });
 
     showUserInfo();

@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
 using MyForeignCards.Services;
 using MyForeignCards.Utils;
-using System.Security.Claims;
 
 namespace MyForeignCards.Endpoints
 {
@@ -23,7 +21,7 @@ namespace MyForeignCards.Endpoints
                 return Results.Ok(words);
             }).RequireAuthorization();
 
-            app.MapGet("/api/words/{id:guid}", async (Guid wordId, WordService wordService, HttpContext context) =>
+            app.MapGet("/api/words/{wordId:guid}", async (Guid wordId, WordService wordService, HttpContext context) =>
             {
                 if (!UserUtils.GetId(context.User, out Guid userId))
                 {
@@ -88,9 +86,14 @@ namespace MyForeignCards.Endpoints
                 return Results.Created($"/api/words/{result.Id}", result);
             }).RequireAuthorization();
 
-            app.MapDelete("/api/words/{id:guid}", async (Guid id, WordService wordService) =>
+            app.MapDelete("/api/words/{id:guid}", async (Guid id, WordService wordService, HttpContext context) =>
             {
-                var result = await wordService.DeleteWordByIdAsync(id);
+                if (!UserUtils.GetId(context.User, out Guid userId))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var result = await wordService.DeleteWordByIdAsync(id, userId);
 
                 if (!result)
                 {
@@ -103,8 +106,13 @@ namespace MyForeignCards.Endpoints
                 return Results.NoContent();
             }).RequireAuthorization();
 
-            app.MapPut("/api/words/{id:guid}", async (Guid id, WordRequest wordReq, WordService wordService) =>
+            app.MapPut("/api/words/{id:guid}", async (Guid id, WordRequest wordReq, WordService wordService, HttpContext context) =>
             {
+                if (!UserUtils.GetId(context.User, out Guid userId))
+                {
+                    return Results.Unauthorized();
+                }
+
                 if (wordReq is null ||
                     string.IsNullOrWhiteSpace(wordReq.Text) ||
                     string.IsNullOrWhiteSpace(wordReq.Translation))
@@ -123,7 +131,7 @@ namespace MyForeignCards.Endpoints
                     CategoryId = wordReq.CategoryId
                 };
 
-                var result = await wordService.ChangeWordAsync(id, word);
+                var result = await wordService.ChangeWordAsync(id, userId, word);
 
                 if (!result)
                 {

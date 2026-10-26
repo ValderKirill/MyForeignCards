@@ -80,7 +80,9 @@ namespace MyForeignCards.Services
 
         public async Task<WordResponse?> GetWordByIdAsync(Guid id, Guid userId)
         {
-            var word = await _context.Words.FindAsync(id);
+            var word = await _context.Words
+                .Where(word => word.UserId == userId)
+                .FirstOrDefaultAsync(word => word.Id == id);
 
             if (word == null) 
             {
@@ -98,9 +100,11 @@ namespace MyForeignCards.Services
             };
         }
 
-        public async Task<bool> DeleteWordByIdAsync(Guid id)
+        public async Task<bool> DeleteWordByIdAsync(Guid id, Guid userId)
         {
-            var word = await _context.Words.FindAsync(id);
+            var word = await _context.Words
+                .Where(word => word.UserId == userId)
+                .FirstOrDefaultAsync(word => word.Id == id);
 
             if (word != null)
             {
@@ -125,12 +129,24 @@ namespace MyForeignCards.Services
             }
         }
 
-        public async Task<bool> ChangeWordAsync(Guid id, Word newWord)
+        public async Task<bool> ChangeWordAsync(Guid id, Guid userId, Word newWord)
         {
-            var word = await _context.Words.FindAsync(id);
+            var word = await _context.Words
+                .Where(word => word.UserId == userId)
+                .FirstOrDefaultAsync(word => word.Id == id);
 
             if (word != null)
             {
+                var categoryExists = await _context.Categories
+                    .AsNoTracking()
+                    .Where(category => category.UserId == userId)
+                    .AnyAsync(category => category.Id == word.CategoryId);
+
+                if (!categoryExists)
+                {
+                    return false;
+                }
+
                 word.Text = newWord.Text;
                 word.Translation = newWord.Translation;
                 word.CategoryId = newWord.CategoryId;

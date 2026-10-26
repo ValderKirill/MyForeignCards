@@ -51,9 +51,11 @@ namespace MyForeignCards.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> DeleteCategoryByIdAsync(Guid id)
+        public async Task<bool> DeleteCategoryByIdAsync(Guid id, Guid userId)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .Where(category => category.UserId == userId)
+                .FirstOrDefaultAsync(category => category.Id == id);
 
             if (category != null)
             {

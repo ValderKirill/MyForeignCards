@@ -1,4 +1,5 @@
-﻿using MyForeignCards.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
 using MyForeignCards.Services;
 using MyForeignCards.Utils;
@@ -46,9 +47,14 @@ namespace MyForeignCards.Endpoints
                 return Results.Created($"/api/categories/{result.Id}", result);
             }).RequireAuthorization();
 
-            app.MapDelete("/api/categories/{id:guid}", async (Guid id, CategoryService categoryService) =>
+            app.MapDelete("/api/categories/{id:guid}", async (Guid id, CategoryService categoryService, HttpContext context) =>
             {
-                var result = await categoryService.DeleteCategoryByIdAsync(id);
+                if (!UserUtils.GetId(context.User, out Guid userId))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var result = await categoryService.DeleteCategoryByIdAsync(id, userId);
 
                 if (!result)
                 {

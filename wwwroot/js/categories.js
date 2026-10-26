@@ -1,5 +1,4 @@
-﻿//Добавление категории
-async function addCategory(name) {
+﻿async function addCategory(name) {
     const response = await fetch("/api/categories", {
         method: "POST",
         headers: { "Accept": "application/json", "Content-Type": "application/json" },
@@ -23,7 +22,6 @@ async function addCategory(name) {
     }
 }
 
-//получение всех категорий
 async function getAllCategories() {
     const response = await fetch("/api/categories", {
         method: "GET",
