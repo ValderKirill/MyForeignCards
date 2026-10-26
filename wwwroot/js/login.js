@@ -29,7 +29,6 @@ async function registration(login, password) {
 
     if (response.ok === true) {
         await entry(login, password);
-        sessionStorage.setItem("username", login);
     }
     else {
         console.log("Status: ", response.status);

@@ -49,22 +49,19 @@ namespace MyForeignCards.Services
 
         public async Task<WordResponse?> AddWordAsync(Word newWord)
         {
-            if (newWord.CategoryId != null)
+            if (newWord.CategoryId is Guid categoryId)
             {
-                await _context.Entry(newWord).Reference(w => w.Category).LoadAsync();
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(c =>
+                        c.Id == categoryId &&
+                        c.UserId == newWord.UserId);
 
-                if (newWord.CategoryId is Guid categoryId)
+                if (category == null)
                 {
-                    var categoryExists = await _context.Categories
-                        .AnyAsync(category =>
-                            category.UserId == newWord.UserId &&
-                            category.Id == categoryId);
-
-                    if (!categoryExists)
-                    {
-                        return null;
-                    }
+                    return null;
                 }
+
+                newWord.Category = category;
             }
 
             _context.Words.Add(newWord);
