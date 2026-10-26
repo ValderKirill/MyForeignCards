@@ -36,6 +36,7 @@ namespace MyForeignCards.Services
             if (result == PasswordVerificationResult.Failed)
             {
                 _logger.LogWarning("Ошибка входа: {UserName}", userData.Login);
+                return null;
             }
             else
             {

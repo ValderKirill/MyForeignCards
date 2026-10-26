@@ -30,7 +30,6 @@ async function registration(login, password) {
     if (response.ok === true) {
         await entry(login, password);
         sessionStorage.setItem("username", login);
-        window.location.href = "/index.html";
     }
     else {
         console.log("Status: ", response.status);

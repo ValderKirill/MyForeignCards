@@ -83,6 +83,15 @@ namespace MyForeignCards.Endpoints
                 }
 
                 var result = await wordService.AddWordAsync(word);
+
+                if (result == null)
+                {
+                    return Results.NotFound(new
+                    {
+                        message = "Категория недоступна текущему пользователю"
+                    });
+                }
+
                 return Results.Created($"/api/words/{result.Id}", result);
             }).RequireAuthorization();
 

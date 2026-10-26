@@ -49,10 +49,6 @@ namespace MyForeignCards.Services
 
         public async Task<WordResponse?> AddWordAsync(Word newWord)
         {
-            _context.Words.Add(newWord);
-
-            await _context.SaveChangesAsync();
-
             if (newWord.CategoryId != null)
             {
                 await _context.Entry(newWord).Reference(w => w.Category).LoadAsync();
@@ -70,6 +66,10 @@ namespace MyForeignCards.Services
                     }
                 }
             }
+
+            _context.Words.Add(newWord);
+
+            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Word {WordId} added",
                 newWord.Id);
