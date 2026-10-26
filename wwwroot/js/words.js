@@ -1,9 +1,13 @@
-﻿//получение всех слов
-async function getAllWords() {
+﻿async function getAllWords() {
     const response = await fetch("/api/words", {
         method: "GET",
         headers: { "Accept": "application/json" }
     });
+
+    if (response.status === 401) {
+        window.location.replace("/login.html");
+        return;
+    }
 
     if (response.ok === true) {
         const words = await response.json();
@@ -16,7 +20,6 @@ async function getAllWords() {
     }
 }
 
-//получение всех слов нужной категории
 async function getWordsByCategory(categoryId) {
     const response = await fetch(`/api/words/category/${categoryId}`, {
         method: "GET",
@@ -34,7 +37,6 @@ async function getWordsByCategory(categoryId) {
     }
 }
 
-//получение слова
 async function getWord(id) {
     const response = await fetch(`/api/words/${id}`, {
         method: "GET",
@@ -55,7 +57,6 @@ async function getWord(id) {
     }
 }
 
-//Добавление слова
 async function addWord(text, translation, categoryId) {
     const response = await fetch("/api/words", {
         method: "POST",
@@ -76,7 +77,6 @@ async function addWord(text, translation, categoryId) {
     }
 }
 
-//Изменение слова
 async function editWord(id, text, translation, categoryId) {
     const response = await fetch(`/api/words/${id}`, {
         method: "PUT",
@@ -97,7 +97,6 @@ async function editWord(id, text, translation, categoryId) {
     }
 }
 
-//Удаление слова
 async function deleteWord(id) {
     const response = await fetch(`/api/words/${id}`, {
         method: "DELETE",
@@ -115,7 +114,6 @@ async function deleteWord(id) {
     }
 }
 
-// создание строки для таблицы
 function row(word) {
 
     const tr = document.createElement("tr");
@@ -161,6 +159,17 @@ function resetTable() {
         .forEach(row => row.remove());
 }
 
+async function refreshTable(categoryId) {
+    resetTable();
+
+    if (categoryId === "") {
+        await getAllWords();
+    }
+    else {
+        await getWordsByCategory(categoryId);
+    }
+}
+
 document.getElementById("resetBtn").addEventListener("click", () => resetAddForm());
 
 document.getElementById("saveBtn").addEventListener("click", async () => {
@@ -184,16 +193,5 @@ document.getElementById("tableCategory").addEventListener("change", async () => 
     const categoryId = document.getElementById("tableCategory").value;
     await refreshTable(categoryId);
 })
-
-async function refreshTable(categoryId) {
-    resetTable();
-
-    if (categoryId === "") {
-        await getAllWords();
-    }
-    else {
-        await getWordsByCategory(categoryId);
-    }
-}
 
 getAllWords();

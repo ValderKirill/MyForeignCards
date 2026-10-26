@@ -7,6 +7,7 @@ namespace MyForeignCards.Data
     {
         public DbSet<Word> Words => Set<Word>();
         public DbSet<Category> Categories => Set<Category>();
+        public DbSet<User> Users => Set<User>();
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
 

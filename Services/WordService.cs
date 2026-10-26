@@ -16,9 +16,10 @@ namespace MyForeignCards.Services
             _context = context;
         }
 
-        public Task<List<WordResponse>> GetAllWordsAsync()
+        public Task<List<WordResponse>> GetAllWordsAsync(Guid userId)
         {
             return _context.Words
+                .Where(word => word.UserId == userId)
                 .AsNoTracking()
                 .Select(word => new WordResponse
                 {
@@ -30,9 +31,10 @@ namespace MyForeignCards.Services
                 .ToListAsync();
         }
 
-        public Task<List<WordResponse>> GetWordsByCategoryAsync(Guid categoryId)
+        public Task<List<WordResponse>> GetWordsByCategoryAsync(Guid categoryId, Guid userId)
         {
             return _context.Words
+                .Where(word => word.UserId == userId)
                 .Where(word => word.CategoryId == categoryId)
                 .AsNoTracking()
                 .Select(word => new WordResponse
@@ -69,13 +71,14 @@ namespace MyForeignCards.Services
                 Id = newWord.Id,
                 Text = newWord.Text,
                 Translation = newWord.Translation,
-                CategoryId = newWord.CategoryId
+                CategoryId = newWord.CategoryId,
+                UserId = newWord.UserId
             };
 
             return wordResponse;
         }
 
-        public async Task<WordResponse?> GetWordByIdAsync(Guid id)
+        public async Task<WordResponse?> GetWordByIdAsync(Guid id, Guid userId)
         {
             var word = await _context.Words.FindAsync(id);
 
@@ -90,7 +93,8 @@ namespace MyForeignCards.Services
                 Id = word.Id,
                 Text = word.Text,
                 Translation = word.Translation,
-                CategoryId = word.CategoryId
+                CategoryId = word.CategoryId,
+                UserId = userId
             };
         }
 

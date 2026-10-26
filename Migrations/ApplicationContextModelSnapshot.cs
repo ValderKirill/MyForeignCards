@@ -34,10 +34,40 @@ namespace MyForeignCards.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_categories");
 
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_categories_user_id");
+
                     b.ToTable("categories", (string)null);
+                });
+
+            modelBuilder.Entity("MyForeignCards.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("login");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("password");
+
+                    b.HasKey("Id")
+                        .HasName("pk_users");
+
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("MyForeignCards.Entities.Word", b =>
@@ -61,13 +91,32 @@ namespace MyForeignCards.Migrations
                         .HasColumnType("text")
                         .HasColumnName("translation");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_words");
 
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_words_category_id");
 
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_words_user_id");
+
                     b.ToTable("words", (string)null);
+                });
+
+            modelBuilder.Entity("MyForeignCards.Entities.Category", b =>
+                {
+                    b.HasOne("MyForeignCards.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_categories_users_user_id");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyForeignCards.Entities.Word", b =>
@@ -78,7 +127,16 @@ namespace MyForeignCards.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_words_categories_category_id");
 
+                    b.HasOne("MyForeignCards.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_words_users_user_id");
+
                     b.Navigation("Category");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyForeignCards.Entities.Category", b =>
