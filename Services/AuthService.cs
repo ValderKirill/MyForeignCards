@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyForeignCards.Data;
 using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
+using Npgsql;
 
 namespace MyForeignCards.Services
 {
@@ -63,7 +64,20 @@ namespace MyForeignCards.Services
             newUser.Password = _passwordHasher.HashPassword(newUser, newUser.Password);
 
             _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateException ex) when (
+                ex.InnerException is PostgresException pg &&
+                pg.SqlState == PostgresErrorCodes.UniqueViolation &&
+                pg.ConstraintName == "ix_users_login")
+            {
+                _logger.LogInformation(
+                    "User with login {Login} is already exist", 
+                    newUser.Login);
+                return null;
+            }
 
             _logger.LogInformation("User {Login} added", 
                 newUser.Login);

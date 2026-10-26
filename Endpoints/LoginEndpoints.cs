@@ -15,6 +15,14 @@ namespace MyForeignCards.Endpoints
                 HttpContext context,
                 AuthService service) =>
             {
+                if (user.Login == null || user.Password == null)
+                {
+                    return Results.BadRequest(new
+                    {
+                        message = "Логин или пароль пусты"
+                    });
+                }
+
                 var currentUser = await service.GetUserAsync(user);
 
                 if (currentUser is null)
