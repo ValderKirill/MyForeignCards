@@ -1,6 +1,8 @@
-﻿using MyForeignCards.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using MyForeignCards.DTOs;
 using MyForeignCards.Entities;
 using MyForeignCards.Services;
+using MyForeignCards.Utils;
 
 namespace MyForeignCards.Endpoints
 {
@@ -8,8 +10,24 @@ namespace MyForeignCards.Endpoints
     {
         public static void MapCategoryEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/categories", async (CategoryRequest categoryReq, CategoryService categoryService) =>
+            app.MapGet("/api/categories", async (CategoryService categoryService, HttpContext context) =>
             {
+                if (!UserUtils.GetId(context.User, out Guid userId))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var categories = await categoryService.GetAllCategoriesAsync(userId);
+                return Results.Ok(categories);
+            }).RequireAuthorization();
+
+            app.MapPost("/api/categories", async (CategoryRequest categoryReq, CategoryService categoryService, HttpContext context) =>
+            {
+                if (!UserUtils.GetId(context.User, out Guid userId))
+                {
+                    return Results.Unauthorized();
+                }
+
                 if (categoryReq is null || 
                     string.IsNullOrWhiteSpace(categoryReq.Name))
                 {
@@ -21,22 +39,22 @@ namespace MyForeignCards.Endpoints
 
                 var category = new Category
                 {
-                    Name = categoryReq.Name
+                    Name = categoryReq.Name,
+                    UserId = userId
                 };
 
                 var result = await categoryService.AddCategoryAsync(category);
                 return Results.Created($"/api/categories/{result.Id}", result);
-            });
+            }).RequireAuthorization();
 
-            app.MapGet("/api/categories", async (CategoryService categoryService) =>
+            app.MapDelete("/api/categories/{id:guid}", async (Guid id, CategoryService categoryService, HttpContext context) =>
             {
-                var categories = await categoryService.GetAllCategoriesAsync();
-                return Results.Ok(categories);
-            });
+                if (!UserUtils.GetId(context.User, out Guid userId))
+                {
+                    return Results.Unauthorized();
+                }
 
-            app.MapDelete("/api/categories/{id:guid}", async (Guid id, CategoryService categoryService) =>
-            {
-                var result = await categoryService.DeleteCategoryByIdAsync(id);
+                var result = await categoryService.DeleteCategoryByIdAsync(id, userId);
 
                 if (!result)
                 {
@@ -47,7 +65,7 @@ namespace MyForeignCards.Endpoints
                 }
 
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
         }
     }
 }

@@ -16,9 +16,10 @@ namespace MyForeignCards.Services
             _context = context;
         }
 
-        public Task<List<WordResponse>> GetAllWordsAsync()
+        public Task<List<WordResponse>> GetAllWordsAsync(Guid userId)
         {
             return _context.Words
+                .Where(word => word.UserId == userId)
                 .AsNoTracking()
                 .Select(word => new WordResponse
                 {
@@ -30,9 +31,10 @@ namespace MyForeignCards.Services
                 .ToListAsync();
         }
 
-        public Task<List<WordResponse>> GetWordsByCategoryAsync(Guid categoryId)
+        public Task<List<WordResponse>> GetWordsByCategoryAsync(Guid categoryId, Guid userId)
         {
             return _context.Words
+                .Where(word => word.UserId == userId)
                 .Where(word => word.CategoryId == categoryId)
                 .AsNoTracking()
                 .Select(word => new WordResponse
@@ -45,16 +47,26 @@ namespace MyForeignCards.Services
                 .ToListAsync();
         }
 
-        public async Task<WordResponse> AddWordAsync(Word newWord)
+        public async Task<WordResponse?> AddWordAsync(Word newWord)
         {
+            if (newWord.CategoryId is Guid categoryId)
+            {
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(c =>
+                        c.Id == categoryId &&
+                        c.UserId == newWord.UserId);
+
+                if (category == null)
+                {
+                    return null;
+                }
+
+                newWord.Category = category;
+            }
+
             _context.Words.Add(newWord);
 
             await _context.SaveChangesAsync();
-
-            if (newWord.CategoryId != null)
-            {
-                await _context.Entry(newWord).Reference(w => w.Category).LoadAsync();
-            }
 
             _logger.LogInformation("Word {WordId} added",
                 newWord.Id);
@@ -75,9 +87,11 @@ namespace MyForeignCards.Services
             return wordResponse;
         }
 
-        public async Task<WordResponse?> GetWordByIdAsync(Guid id)
+        public async Task<WordResponse?> GetWordByIdAsync(Guid id, Guid userId)
         {
-            var word = await _context.Words.FindAsync(id);
+            var word = await _context.Words
+                .Where(word => word.UserId == userId)
+                .FirstOrDefaultAsync(word => word.Id == id);
 
             if (word == null) 
             {
@@ -94,9 +108,11 @@ namespace MyForeignCards.Services
             };
         }
 
-        public async Task<bool> DeleteWordByIdAsync(Guid id)
+        public async Task<bool> DeleteWordByIdAsync(Guid id, Guid userId)
         {
-            var word = await _context.Words.FindAsync(id);
+            var word = await _context.Words
+                .Where(word => word.UserId == userId)
+                .FirstOrDefaultAsync(word => word.Id == id);
 
             if (word != null)
             {
@@ -121,12 +137,27 @@ namespace MyForeignCards.Services
             }
         }
 
-        public async Task<bool> ChangeWordAsync(Guid id, Word newWord)
+        public async Task<bool> ChangeWordAsync(Guid id, Guid userId, Word newWord)
         {
-            var word = await _context.Words.FindAsync(id);
+            var word = await _context.Words
+                .Where(word => word.UserId == userId)
+                .FirstOrDefaultAsync(word => word.Id == id);
 
             if (word != null)
             {
+                if (newWord.CategoryId is Guid categoryId)
+                {
+                    var categoryExists = await _context.Categories
+                        .AnyAsync(category =>
+                            category.UserId == userId &&
+                            category.Id == categoryId);
+
+                    if (!categoryExists)
+                    {
+                        return false;
+                    }
+                }
+
                 word.Text = newWord.Text;
                 word.Translation = newWord.Translation;
                 word.CategoryId = newWord.CategoryId;

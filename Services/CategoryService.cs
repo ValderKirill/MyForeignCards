@@ -32,25 +32,30 @@ namespace MyForeignCards.Services
             return new CategoryResponse
             {
                 Id = category.Id,
-                Name = category.Name
+                Name = category.Name,
+                UserId = category.UserId
             };
         }
 
-        public Task<List<CategoryResponse>> GetAllCategoriesAsync()
+        public Task<List<CategoryResponse>> GetAllCategoriesAsync(Guid userId)
         {
             return _context.Categories
                 .AsNoTracking()
+                .Where(category => category.UserId == userId)
                 .Select(category => new CategoryResponse
                 {
                     Id = category.Id,
-                    Name = category.Name
+                    Name = category.Name,
+                    UserId = category.UserId
                 })
                 .ToListAsync();
         }
 
-        public async Task<bool> DeleteCategoryByIdAsync(Guid id)
+        public async Task<bool> DeleteCategoryByIdAsync(Guid id, Guid userId)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .Where(category => category.UserId == userId)
+                .FirstOrDefaultAsync(category => category.Id == id);
 
             if (category != null)
             {
