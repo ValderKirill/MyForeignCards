@@ -47,7 +47,7 @@ namespace MyForeignCards.Services
                 .ToListAsync();
         }
 
-        public async Task<WordResponse> AddWordAsync(Word newWord)
+        public async Task<WordResponse?> AddWordAsync(Word newWord)
         {
             _context.Words.Add(newWord);
 
@@ -56,6 +56,19 @@ namespace MyForeignCards.Services
             if (newWord.CategoryId != null)
             {
                 await _context.Entry(newWord).Reference(w => w.Category).LoadAsync();
+
+                if (newWord.CategoryId is Guid categoryId)
+                {
+                    var categoryExists = await _context.Categories
+                        .AnyAsync(category =>
+                            category.UserId == newWord.UserId &&
+                            category.Id == categoryId);
+
+                    if (!categoryExists)
+                    {
+                        return null;
+                    }
+                }
             }
 
             _logger.LogInformation("Word {WordId} added",
@@ -71,8 +84,7 @@ namespace MyForeignCards.Services
                 Id = newWord.Id,
                 Text = newWord.Text,
                 Translation = newWord.Translation,
-                CategoryId = newWord.CategoryId,
-                UserId = newWord.UserId
+                CategoryId = newWord.CategoryId
             };
 
             return wordResponse;
@@ -95,8 +107,7 @@ namespace MyForeignCards.Services
                 Id = word.Id,
                 Text = word.Text,
                 Translation = word.Translation,
-                CategoryId = word.CategoryId,
-                UserId = userId
+                CategoryId = word.CategoryId
             };
         }
 
@@ -137,14 +148,17 @@ namespace MyForeignCards.Services
 
             if (word != null)
             {
-                var categoryExists = await _context.Categories
-                    .AsNoTracking()
-                    .Where(category => category.UserId == userId)
-                    .AnyAsync(category => category.Id == word.CategoryId);
-
-                if (!categoryExists)
+                if (newWord.CategoryId is Guid categoryId)
                 {
-                    return false;
+                    var categoryExists = await _context.Categories
+                        .AnyAsync(category =>
+                            category.UserId == userId &&
+                            category.Id == categoryId);
+
+                    if (!categoryExists)
+                    {
+                        return false;
+                    }
                 }
 
                 word.Text = newWord.Text;
